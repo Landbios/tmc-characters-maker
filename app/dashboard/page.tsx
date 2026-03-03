@@ -3,11 +3,12 @@
 import { createClient } from '@/utils/supabase/client';
 import { useEffect, useState } from 'react';
 import { Character } from '@/types/character';
-import { Edit, Trash2, Eye, Plus, LogOut, Search, ChevronLeft, ChevronRight, Shield } from 'lucide-react';
+import { Edit, Trash2, Eye, Plus, LogOut, Search, ChevronLeft, ChevronRight, Shield, MessageSquarePlus, X, Send } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import Image from 'next/image';
+import React from 'react';
 
 const ITEMS_PER_PAGE = 6;
 
@@ -17,6 +18,10 @@ export default function DashboardPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterBattlefront, setFilterBattlefront] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [feedbackText, setFeedbackText] = useState('');
+  const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
+  const [currentUser, setCurrentUser] = useState<{ id: string } | null>(null);
   const supabase = createClient();
   const router = useRouter();
 
@@ -27,6 +32,7 @@ export default function DashboardPage() {
         router.push('/login');
         return;
       }
+      setCurrentUser(user as { id: string });
 
       const { data, error } = await supabase
         .from('characters')
@@ -43,6 +49,23 @@ export default function DashboardPage() {
 
     fetchCharacters();
   }, [supabase, router]);
+
+  const handleFeedbackSubmit = async () => {
+    const trimmed = feedbackText.trim();
+    if (!trimmed || !currentUser) return;
+    setFeedbackSubmitting(true);
+    const { error } = await supabase
+      .from('feedback')
+      .insert({ user_id: currentUser.id, content: trimmed });
+    setFeedbackSubmitting(false);
+    if (error) {
+      toast.error('Failed to send feedback. Please try again.');
+    } else {
+      toast.success('Feedback received — thank you!');
+      setFeedbackText('');
+      setFeedbackOpen(false);
+    }
+  };
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -173,6 +196,23 @@ export default function DashboardPage() {
 
             {/* Action buttons */}
             <div className="flex items-center gap-3">
+              {/* Feedback button */}
+              <button
+                title="Leave feedback or suggestion"
+                style={outlineBtnStyle}
+                onClick={() => setFeedbackOpen(true)}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--glow)';
+                  (e.currentTarget as HTMLButtonElement).style.color = 'var(--glow)';
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)';
+                  (e.currentTarget as HTMLButtonElement).style.color = 'var(--accent)';
+                }}
+              >
+                <MessageSquarePlus className="inline mr-2 h-3.5 w-3.5" />
+                Feedback
+              </button>
               <button
                 style={outlineBtnStyle}
                 onClick={handleSignOut}
@@ -520,6 +560,101 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+
+      {/* ── Feedback Modal ──────────────────────────────── */}
+      {feedbackOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
+          onClick={e => { if (e.target === e.currentTarget) setFeedbackOpen(false); }}
+        >
+          <div
+            style={{
+              backgroundColor: 'var(--surface)',
+              border: '1px solid var(--border)',
+              width: '100%',
+              maxWidth: '480px',
+            }}
+            className="relative flex flex-col gap-0"
+          >
+            {/* Modal header */}
+            <div style={{ borderBottom: '1px solid var(--border)', padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'var(--surface-alt)' }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--glow)' }}>
+                ◈ Submit Feedback
+              </span>
+              <button
+                onClick={() => setFeedbackOpen(false)}
+                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.2rem', display: 'flex' }}
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Modal body */}
+            <div style={{ padding: '1.25rem' }}>
+              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '0.75rem', lineHeight: 1.6 }}>
+                Share your suggestions, bug reports, or ideas for improving the Character Vault.
+              </p>
+              <textarea
+                value={feedbackText}
+                onChange={e => setFeedbackText(e.target.value.slice(0, 1000))}
+                maxLength={1000}
+                rows={6}
+                placeholder="Your message here…"
+                style={{
+                  width: '100%',
+                  backgroundColor: 'var(--surface-alt)',
+                  border: '1px solid var(--border-light)',
+                  color: 'var(--text)',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.8rem',
+                  padding: '0.6rem 0.75rem',
+                  outline: 'none',
+                  resize: 'vertical',
+                  minHeight: '120px',
+                }}
+                onFocus={e => (e.currentTarget.style.borderColor = '#0353a4')}
+                onBlur={e => (e.currentTarget.style.borderColor = 'var(--border-light)')}
+              />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', color: 'var(--text-muted)' }}>
+                  {feedbackText.length} / 1000
+                </span>
+                <button
+                  onClick={handleFeedbackSubmit}
+                  disabled={!feedbackText.trim() || feedbackSubmitting}
+                  style={{
+                    backgroundColor: !feedbackText.trim() || feedbackSubmitting ? 'var(--border)' : '#0353a4',
+                    color: '#fff',
+                    border: 'none',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.7rem',
+                    letterSpacing: '0.14em',
+                    textTransform: 'uppercase',
+                    padding: '0.5rem 1.25rem',
+                    cursor: !feedbackText.trim() || feedbackSubmitting ? 'not-allowed' : 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    transition: 'background-color 0.2s',
+                  }}
+                  onMouseEnter={e => {
+                    if (feedbackText.trim() && !feedbackSubmitting)
+                      (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#023e7d';
+                  }}
+                  onMouseLeave={e => {
+                    if (feedbackText.trim() && !feedbackSubmitting)
+                      (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#0353a4';
+                  }}
+                >
+                  <Send size={13} />
+                  {feedbackSubmitting ? 'Sending…' : 'Send'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

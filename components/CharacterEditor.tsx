@@ -198,6 +198,14 @@ export default function CharacterEditor() {
       if (id) {
         const { data, error } = await supabase.from('characters').select('*').eq('id', id).single();
         if (data && !error) {
+          // ── Owner guard ───────────────────────────────────
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user && data.user_id && data.user_id !== user.id) {
+            toast.error('Access denied — you can only edit your own characters.');
+            router.replace(`/character/${id}`);
+            return;
+          }
+          // ─────────────────────────────────────────────────
           if (!data.layout) {
             data.layout = [
               { id: 'stats', type: 'stats', isCore: true },
@@ -213,7 +221,7 @@ export default function CharacterEditor() {
       }
     };
     loadCharacter();
-  }, [id, supabase, setCharacter]);
+  }, [id, supabase, setCharacter, router]);
 
   const handleSave = async () => {
     if (!user) {
