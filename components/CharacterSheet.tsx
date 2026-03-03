@@ -294,7 +294,16 @@ export default function CharacterSheet({ character, preview = false }: Character
             <span className="text-xs">❖</span>
             <span className="text-xs">❖</span>
           </div>
-          <p className="font-script text-2xl md:text-3xl opacity-80">&ldquo;{character.quote}&rdquo;</p>
+          <p 
+            className={`opacity-80 ${character.quote_size || 'text-2xl md:text-3xl'}`}
+            style={{ 
+              fontFamily: character.quote_font || 'var(--font-cormorant)',
+              fontStyle: character.quote_italic !== false ? 'italic' : 'normal',
+              color: character.quote_color || 'inherit'
+            }}
+          >
+            &ldquo;{character.quote}&rdquo;
+          </p>
           <div className="flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.3em] opacity-40">
             <span>{character.name}</span>
           </div>

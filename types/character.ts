@@ -62,6 +62,10 @@ export type Character = {
   font_heading: string;
   font_body: string;
   text_color: string;
+  quote_font?: string;
+  quote_color?: string;
+  quote_size?: string;
+  quote_italic?: boolean;
   background_color: string;
   background_image_url: string;
   background_overlay_opacity: number;
@@ -125,6 +129,10 @@ export const DEFAULT_CHARACTER: Character = {
   font_heading: 'var(--font-cormorant)',
   font_body: 'var(--font-inter)',
   text_color: '#2D2D2D',
+  quote_font: 'var(--font-cormorant)',
+  quote_color: '',
+  quote_size: 'text-2xl md:text-3xl',
+  quote_italic: true,
   background_color: '#FFF5F5',
   background_image_url: '',
   background_overlay_opacity: 0.5,

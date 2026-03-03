@@ -491,12 +491,61 @@ export default function CharacterEditor() {
               <div>
                 <label style={S.label}>Frase / Cita</label>
                 <textarea
-                  style={{ ...S.textarea, fontStyle: 'italic' }}
+                  style={{ ...S.textarea, fontStyle: character.quote_italic !== false ? 'italic' : 'normal', fontFamily: character.quote_font || 'var(--font-cormorant)' }}
                   value={character.quote}
                   onChange={e => updateField('quote', e.target.value)}
                   onFocus={onFocus}
                   onBlur={onBlur}
                 />
+              </div>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginTop: '0.5rem' }}>
+                <div>
+                  <label style={S.label}>Fuente de la Cita</label>
+                  <select style={S.select} value={character.quote_font || 'var(--font-cormorant)'} onChange={e => updateField('quote_font', e.target.value)} onFocus={onFocus} onBlur={onBlur}>
+                    {FONTS_HEADING.map(f => <option key={f.value} value={f.value}>{f.name}</option>)}
+                    {FONTS_BODY.map(f => <option key={f.value} value={f.value}>{f.name}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={S.label}>Tamaño de la Cita</label>
+                  <select style={S.select} value={character.quote_size || 'text-2xl md:text-3xl'} onChange={e => updateField('quote_size', e.target.value)} onFocus={onFocus} onBlur={onBlur}>
+                    <option value="text-xl md:text-2xl">Pequeño</option>
+                    <option value="text-2xl md:text-3xl">Mediano (Normal)</option>
+                    <option value="text-3xl md:text-4xl">Grande</option>
+                    <option value="text-4xl md:text-5xl">Extra Grande</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={S.label}>Color (Opcional)</label>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <input type="color" value={character.quote_color || '#ffffff'} onChange={e => updateField('quote_color', e.target.value)} style={{ width: '2.5rem', height: '2.1rem', padding: '0.1rem', cursor: 'pointer', border: '1px solid var(--border)', backgroundColor: 'var(--surface-alt)' }} />
+                    <input style={{ ...S.input, flex: 1 }} type="text" placeholder="Heredar color" value={character.quote_color || ''} onChange={e => updateField('quote_color', e.target.value)} onFocus={onFocus} onBlur={onBlur} />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center' }}>
+                  <label style={S.label}>Cursiva</label>
+                  <button
+                    role="switch"
+                    aria-checked={character.quote_italic !== false}
+                    onClick={() => updateField('quote_italic', !(character.quote_italic !== false))}
+                    style={{
+                      width: '2.4rem', height: '1.3rem', borderRadius: '999px', border: 'none', cursor: 'pointer',
+                      backgroundColor: character.quote_italic !== false ? '#0353a4' : 'var(--border)',
+                      position: 'relative', transition: 'background-color 0.2s', flexShrink: 0,
+                    }}
+                  >
+                    <span style={{
+                      position: 'absolute', top: '0.15rem',
+                      left: character.quote_italic !== false ? 'calc(100% - 1.05rem)' : '0.15rem',
+                      width: '1rem', height: '1rem', borderRadius: '50%', backgroundColor: '#fff',
+                      transition: 'left 0.2s', display: 'block',
+                    }} />
+                  </button>
+                </div>
               </div>
             </EditorSection>
 
