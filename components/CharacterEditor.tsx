@@ -201,7 +201,7 @@ export default function CharacterEditor() {
           // ── Owner guard ───────────────────────────────────
           const { data: { user } } = await supabase.auth.getUser();
           if (user && data.user_id && data.user_id !== user.id) {
-            toast.error('Access denied — you can only edit your own characters.');
+            toast.error('Acceso denegado — solo puedes editar tus propios personajes.');
             router.replace(`/character/${id}`);
             return;
           }

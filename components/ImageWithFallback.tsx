@@ -11,6 +11,10 @@ export default function ImageWithFallback({
 }: ImageProps) {
   const [error, setError] = useState(false);
 
+  React.useEffect(() => {
+    setError(false);
+  }, [src]);
+
   // Validate URL format
   const isValidUrl = (url: string) => {
     try {

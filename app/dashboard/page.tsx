@@ -73,6 +73,11 @@ export default function DashboardPage() {
   };
 
   const handleDelete = async (id: string) => {
+    const charToDelete = characters.find(c => c.id === id);
+    if (!currentUser || charToDelete?.user_id !== currentUser.id) {
+      toast.error('Acceso denegado — no tienes permiso para eliminar este personaje.');
+      return;
+    }
     if (!confirm('CONFIRMAR ELIMINACIÓN: Esta acción es irreversible.')) return;
     const { error } = await supabase.from('characters').delete().eq('id', id);
     if (error) {
@@ -176,7 +181,7 @@ export default function DashboardPage() {
             ◈ KIZOKU NO YOZAI · CLASIFICACIÓN: CADETE
           </p>
 
-          <div className="flex items-start justify-between flex-wrap gap-4">
+          <div className="md:flex items-start justify-between flex-wrap gap-4">
             <div>
               <h1
                 style={{
@@ -195,7 +200,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Action buttons */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center flex-wrap gap-3">
               {/* Feedback button */}
               <button
                 title="Dejar sugerencias o feedback"
@@ -452,37 +457,42 @@ export default function DashboardPage() {
                           <Eye size={15} />
                         </button>
                       </Link>
-                      <Link href={`/?id=${char.id}`}>
-                        <button
-                          title="Editar personaje"
-                          style={iconBtnStyle}
-                          onMouseEnter={e => {
-                            (e.currentTarget as HTMLButtonElement).style.color = 'var(--glow)';
-                            (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)';
-                          }}
-                          onMouseLeave={e => {
-                            (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)';
-                            (e.currentTarget as HTMLButtonElement).style.borderColor = 'transparent';
-                          }}
-                        >
-                          <Edit size={15} />
-                        </button>
-                      </Link>
-                      <button
-                        title="Eliminar personaje"
-                        style={{ ...iconBtnStyle }}
-                        onClick={() => handleDelete(char.id)}
-                        onMouseEnter={e => {
-                          (e.currentTarget as HTMLButtonElement).style.color = 'var(--danger)';
-                          (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--danger)';
-                        }}
-                        onMouseLeave={e => {
-                          (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)';
-                          (e.currentTarget as HTMLButtonElement).style.borderColor = 'transparent';
-                        }}
-                      >
-                        <Trash2 size={15} />
-                      </button>
+
+                      {currentUser?.id === char.user_id && (
+                        <>
+                          <Link href={`/?id=${char.id}`}>
+                            <button
+                              title="Editar personaje"
+                              style={iconBtnStyle}
+                              onMouseEnter={e => {
+                                (e.currentTarget as HTMLButtonElement).style.color = 'var(--glow)';
+                                (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)';
+                              }}
+                              onMouseLeave={e => {
+                                (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)';
+                                (e.currentTarget as HTMLButtonElement).style.borderColor = 'transparent';
+                              }}
+                            >
+                              <Edit size={15} />
+                            </button>
+                          </Link>
+                          <button
+                            title="Eliminar personaje"
+                            style={{ ...iconBtnStyle }}
+                            onClick={() => handleDelete(char.id)}
+                            onMouseEnter={e => {
+                              (e.currentTarget as HTMLButtonElement).style.color = 'var(--danger)';
+                              (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--danger)';
+                            }}
+                            onMouseLeave={e => {
+                              (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)';
+                              (e.currentTarget as HTMLButtonElement).style.borderColor = 'transparent';
+                            }}
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

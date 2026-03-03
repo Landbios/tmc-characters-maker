@@ -3,9 +3,11 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { Character, Section, Rank } from '@/types/character';
-import { Zap, Mountain, Shield, Feather, Flame, User, Sword, Scroll } from 'lucide-react';
+import { Zap, Mountain, Shield, Feather, Flame, User, Sword, Scroll, ArrowLeft } from 'lucide-react';
 import ImageWithFallback from '@/components/ImageWithFallback';
 import { COMBAT_STATS_INFO } from '@/utils/combatStats';
+import { createClient } from '@/utils/supabase/client';
+import Link from 'next/link';
 
 interface CharacterSheetProps {
   character: Character;
@@ -13,6 +15,17 @@ interface CharacterSheetProps {
 }
 
 export default function CharacterSheet({ character, preview = false }: CharacterSheetProps) {
+  const [isLoggedIn, setIsLoggedIn] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkAuth = async () => {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsLoggedIn(!!session);
+    };
+    checkAuth();
+  }, []);
+
   const containerStyle = {
     backgroundColor: character.background_color || '#FFF5F5',
     fontFamily: character.font_body || 'var(--font-inter)',
@@ -50,7 +63,7 @@ export default function CharacterSheet({ character, preview = false }: Character
     switch (section.type as string) {
       case 'stats':
         return (
-          <div key={section.id} className="grid grid-cols-3 gap-4 w-full max-w-2xl">
+          <div key={section.id} className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-2xl">
             <StatBox label="Edad"        value={character.age}         icon={<Feather size={14} />} fontHeading="var(--font-heading)" cardBg={cardBg} />
             <StatBox label="Altura"      value={character.height}      icon={<Shield  size={14} />} fontHeading="var(--font-heading)" cardBg={cardBg} />
             <StatBox label="Nacionalidad" value={character.nationality} icon={<User    size={14} />} fontHeading="var(--font-heading)" cardBg={cardBg} />
@@ -196,6 +209,20 @@ export default function CharacterSheet({ character, preview = false }: Character
       className="w-full max-w-4xl mx-auto p-8 md:p-12 min-h-screen flex flex-col items-center relative overflow-hidden transition-colors duration-500"
       style={containerStyle}
     >
+      {/* Back to Dashboard Button (if logged in and on public view) */}
+      {isLoggedIn && !preview && (
+        <div className="fixed top-4 left-4 z-50">
+          <Link href="/dashboard">
+            <button
+              className="bg-black/60 backdrop-blur border border-white/20 text-white rounded-full p-3 shadow-lg hover:border-blue-400 hover:text-blue-400 transition-all"
+              title="Volver al Dashboard"
+            >
+              <ArrowLeft size={18} />
+            </button>
+          </Link>
+        </div>
+      )}
+
       {/* Background Image & Overlay */}
       {character.background_image_url && (
         <>

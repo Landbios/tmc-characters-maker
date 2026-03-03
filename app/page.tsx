@@ -18,11 +18,12 @@ export default function Home() {
   return (
     <main style={{ backgroundColor: 'var(--bg)', color: 'var(--text)' }} className="flex h-screen w-full overflow-hidden">
       {/* Mobile Toggle */}
-      <div className="fixed top-4 right-4 z-50 md:hidden">
+      <div className="fixed bottom-4 right-4 z-50 md:hidden">
         <Button 
           size="icon" 
           variant="outline" 
-          className="bg-white/80 backdrop-blur"
+          className="rounded-full w-14 h-14 shadow-lg"
+          style={{ backgroundColor: 'var(--surface)', borderColor: 'var(--glow)', color: 'var(--glow)' }}
           onClick={() => setIsEditorOpen(!isEditorOpen)}
         >
           {isEditorOpen ? <X /> : <Menu />}
@@ -32,10 +33,11 @@ export default function Home() {
       {/* Editor Sidebar */}
       <div 
         className={`
-          fixed inset-y-0 left-0 z-40 w-full md:w-[400px] transform transition-transform duration-300 ease-in-out
-          ${isEditorOpen ? 'translate-x-0' : '-translate-x-full'}
-          md:relative md:translate-x-0
+          fixed inset-x-0 bottom-0 z-40 w-full h-[100dvh] transform transition-transform duration-300 ease-in-out
+          ${isEditorOpen ? 'translate-y-0' : 'translate-y-full'}
+          md:relative md:inset-auto md:h-auto md:w-[400px] md:transform-none
         `}
+        style={{ backgroundColor: 'var(--surface)', borderTop: '1px solid var(--border)' }}
       >
         <Suspense fallback={<EditorFallback />}>
           <CharacterEditor />
