@@ -18,12 +18,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!character) {
     return {
-      title: 'Character Not Found',
+      title: 'Personaje no encontrado',
     };
   }
 
   return {
-    title: `${character.name} - Character Sheet`,
+    title: `${character.name} - Hoja de Personaje`,
     description: character.subtitle,
     openGraph: {
       images: [character.image_url],

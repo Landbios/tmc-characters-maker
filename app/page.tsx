@@ -8,7 +8,7 @@ import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 function EditorFallback() {
-  return <div className="p-6 text-center text-ethereal-text/60">Loading editor...</div>;
+  return <div className="p-6 text-center text-ethereal-text/60">Cargando editor...</div>;
 }
 
 export default function Home() {

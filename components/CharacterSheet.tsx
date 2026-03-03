@@ -65,12 +65,12 @@ export default function CharacterSheet({ character, preview = false }: Character
             <div className={`relative w-full mx-auto overflow-hidden ${blazeSizeClass} ${showBlazeBorder ? 'rounded-xl border border-white/60 shadow-sm' : 'rounded-xl'}`}>
               <ImageWithFallback
                 src={character.blaze_image_url || 'https://picsum.photos/seed/fire/400/600'}
-                alt="Blaze Form"
+                alt="Forma Blaze"
                 fill
                 className="object-cover"
               />
               <div className="absolute bottom-0 left-0 right-0 p-2 bg-black/40 backdrop-blur-sm text-center">
-                <span className="text-white/90 text-xs uppercase tracking-widest">Blaze Form</span>
+                <span className="text-white/90 text-xs uppercase tracking-widest">Forma Blaze</span>
               </div>
             </div>
 

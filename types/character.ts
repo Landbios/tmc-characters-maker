@@ -90,21 +90,21 @@ export const DEFAULT_LAYOUT: Section[] = [
 
 export const DEFAULT_CHARACTER: Character = {
   id: 'demo',
-  name: 'Romilda Nassau',
-  subtitle: 'Princesa de Luxemburgo',
-  image_url: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?q=80&w=1000&auto=format&fit=crop',
+  name: 'Nombre del Cadete',
+  subtitle: 'Título o Clasificación',
+  image_url: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=1000&auto=format&fit=crop',
   age: '18 Años',
-  height: '1.66 m',
-  nationality: 'Luxemburguesa',
+  height: '1.70 m',
+  nationality: 'Nacionalidad',
   
-  blaze_image_url: 'https://picsum.photos/seed/fire/400/600',
-  element_user: 'Rayo',
-  element_blaze: 'Tierra',
-  element_advanced: 'Explosivo',
-  blaze_type: 'Melusina',
+  blaze_image_url: 'https://images.unsplash.com/photo-1614729939124-032f0b56c9ce?q=80&w=1000&auto=format&fit=crop',
+  element_user: 'Elemento Base',
+  element_blaze: 'Elemento Principal',
+  element_advanced: 'Elemento Derivado',
+  blaze_type: 'Tipo de Arma/Forma',
 
-  battlefront_name: 'Akatsuki',
-  battlefront_desc: 'Battlefront',
+  battlefront_name: 'Escuadrón',
+  battlefront_desc: 'Descripción del escuadrón o división asignada.',
   
   offensive_power: 'C',
   defensive_power: 'C',
@@ -115,10 +115,10 @@ export const DEFAULT_CHARACTER: Character = {
 
   noble_arts: [],
 
-  clan_name: 'Akatsuki',
-  clan_desc: 'Clan',
+  clan_name: 'Escuadrón',
+  clan_desc: 'Descripción',
   
-  quote: 'La princesa que camina entre rayos y sombras',
+  quote: '"Una frase inspiradora o lema personal del personaje."',
   theme_color: '#E8C4C4',
 
   // Defaults

@@ -208,11 +208,11 @@ export default function CharacterEditor() {
           // ─────────────────────────────────────────────────
           if (!data.layout) {
             data.layout = [
-              { id: 'stats', type: 'stats', isCore: true },
-              { id: 'blaze', type: 'blaze', isCore: true },
-              { id: 'battlefront', type: 'battlefront', isCore: true },
-              { id: 'combat_data', type: 'combat_data', isCore: true },
-              { id: 'noble_arts', type: 'noble_arts', isCore: true },
+              { id: 'stats', type: 'stats', title: 'Estadísticas Básicas', isCore: true },
+              { id: 'blaze', type: 'blaze', title: 'Blaze & Elementos', isCore: true },
+              { id: 'battlefront', type: 'battlefront', title: 'Frente de Batalla', isCore: true },
+              { id: 'combat_data', type: 'combat_data', title: 'Datos de Combate', isCore: true },
+              { id: 'noble_arts', type: 'noble_arts', title: 'Artes Nobles', isCore: true },
             ];
           }
           if (!data.noble_arts) data.noble_arts = [];
@@ -237,12 +237,12 @@ export default function CharacterEditor() {
       if (error) throw error;
       if (data) {
         setCharacter(data);
-        toast.success('Character saved!');
+        toast.success('¡Personaje guardado!');
         if (!id) router.push(`/?id=${data.id}`);
       }
     } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : 'Unknown error';
-      toast.error('Save failed: ' + msg);
+      const msg = error instanceof Error ? error.message : 'Error desconocido';
+      toast.error('Error al guardar: ' + msg);
     } finally {
       setSaving(false);
     }
@@ -250,12 +250,12 @@ export default function CharacterEditor() {
 
   const handleShare = () => {
     if (character.id === 'demo') {
-      toast.error('Save your character first to get a share link!');
+      toast.error('¡Guarda tu personaje primero para obtener un enlace para compartir!');
       return;
     }
     const url = `${window.location.origin}/character/${character.id}`;
     navigator.clipboard.writeText(url);
-    toast.success('Public link copied to clipboard!');
+    toast.success('¡Enlace público copiado al portapapeles!');
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -272,8 +272,8 @@ export default function CharacterEditor() {
       id: uuidv4(),
       type,
       isCore: false,
-      title: type === 'custom_text' ? 'New Section' : undefined,
-      content: type === 'custom_text' ? 'Add your content here...' : undefined,
+      title: type === 'custom_text' ? 'Nueva Sección' : undefined,
+      content: type === 'custom_text' ? 'Agrega tu contenido aquí...' : undefined,
       imageUrl: type === 'custom_image' || type === 'separator' ? '' : undefined,
     };
     updateField('layout', [...character.layout, newSection]);
@@ -349,24 +349,24 @@ export default function CharacterEditor() {
       {/* ── Not-logged-in warning ─────────────────────────── */}
       {!user && (
         <div style={{ margin: '0.75rem 1rem 0', padding: '0.6rem 0.8rem', border: '1px solid var(--border)', backgroundColor: 'var(--surface-alt)', fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-muted)', flexShrink: 0 }}>
-          Demo mode —{' '}
+          Modo demo —{' '}
           <Link href="/login" style={{ color: '#0353a4', textDecoration: 'underline' }}>
-            sign in
+            inicia sesión
           </Link>{' '}
-          to save characters.
+          para guardar personajes.
         </div>
       )}
 
       {/* ── Tabs ──────────────────────────────────────────── */}
       <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', flexShrink: 0, marginTop: '0.75rem' }}>
         <button style={S.tabBtn(activeTab === 'content')} onClick={() => setActiveTab('content')}>
-          <User size={12} /> Content
+          <User size={12} /> Contenido
         </button>
         <button style={S.tabBtn(activeTab === 'design')} onClick={() => setActiveTab('design')}>
-          <Palette size={12} /> Design
+          <Palette size={12} /> Diseño
         </button>
         <button style={S.tabBtn(activeTab === 'layout')} onClick={() => setActiveTab('layout')}>
-          <Layout size={12} /> Layout
+          <Layout size={12} /> Diseño Web
         </button>
       </div>
 
@@ -377,12 +377,12 @@ export default function CharacterEditor() {
         {activeTab === 'content' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
-            <EditorSection title="Identity">
-              <Field label="Name" value={character.name} onChange={v => updateField('name', v)} />
-              <Field label="Subtitle / Title" value={character.subtitle} onChange={v => updateField('subtitle', v)} />
-              <Field label="Character Image URL" value={character.image_url} onChange={v => updateField('image_url', v)} placeholder="https://..." />
+            <EditorSection title="Identidad">
+              <Field label="Nombre" value={character.name} onChange={v => updateField('name', v)} />
+              <Field label="Subtítulo / Título" value={character.subtitle} onChange={v => updateField('subtitle', v)} />
+              <Field label="URL Imagen del Personaje" value={character.image_url} onChange={v => updateField('image_url', v)} placeholder="https://..." />
               <div>
-                <label style={S.label}>Image Fit</label>
+                <label style={S.label}>Ajuste de Imagen</label>
                 <select
                   style={S.select}
                   value={character.image_fit || 'cover'}
@@ -390,33 +390,33 @@ export default function CharacterEditor() {
                   onFocus={onFocus}
                   onBlur={onBlur}
                 >
-                  <option value="cover">Cover</option>
-                  <option value="contain">Contain</option>
+                  <option value="cover">Cubrir (Cover)</option>
+                  <option value="contain">Contener (Contain)</option>
                 </select>
               </div>
             </EditorSection>
 
-            <EditorSection title="Stats">
+            <EditorSection title="Estadísticas">
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                <Field label="Age" value={character.age} onChange={v => updateField('age', v)} />
-                <Field label="Height" value={character.height} onChange={v => updateField('height', v)} />
+                <Field label="Edad" value={character.age} onChange={v => updateField('age', v)} />
+                <Field label="Altura" value={character.height} onChange={v => updateField('height', v)} />
               </div>
-              <Field label="Nationality" value={character.nationality} onChange={v => updateField('nationality', v)} />
+              <Field label="Nacionalidad" value={character.nationality} onChange={v => updateField('nationality', v)} />
             </EditorSection>
 
-            <EditorSection title="Blaze & Elements">
-              <Field label="Blaze Image URL" value={character.blaze_image_url || ''} onChange={v => updateField('blaze_image_url', v)} placeholder="https://..." />
+            <EditorSection title="Blaze & Elementos">
+              <Field label="URL Imagen del Blaze" value={character.blaze_image_url || ''} onChange={v => updateField('blaze_image_url', v)} placeholder="https://..." />
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                <Field label="User Element" value={character.element_user || ''} onChange={v => updateField('element_user', v)} />
-                <Field label="Blaze Element" value={character.element_blaze || ''} onChange={v => updateField('element_blaze', v)} />
+                <Field label="Elemento Usuario" value={character.element_user || ''} onChange={v => updateField('element_user', v)} />
+                <Field label="Elemento Blaze" value={character.element_blaze || ''} onChange={v => updateField('element_blaze', v)} />
               </div>
-              <Field label="Advanced Element" value={character.element_advanced || ''} onChange={v => updateField('element_advanced', v)} />
-              <Field label="Blaze Type" value={character.blaze_type || ''} onChange={v => updateField('blaze_type', v)} />
+              <Field label="Elemento Avanzado" value={character.element_advanced || ''} onChange={v => updateField('element_advanced', v)} />
+              <Field label="Tipo de Blaze" value={character.blaze_type || ''} onChange={v => updateField('blaze_type', v)} />
             </EditorSection>
 
-            <EditorSection title="Battlefront">
+            <EditorSection title="Frente de Batalla">
               <div>
-                <label style={S.label}>Battlefront Name</label>
+                <label style={S.label}>Nombre del Frente</label>
                 <select
                   style={S.select}
                   value={character.battlefront_name || character.clan_name || 'Akatsuki'}
@@ -431,7 +431,7 @@ export default function CharacterEditor() {
                 </select>
               </div>
               <div>
-                <label style={S.label}>Battlefront Description</label>
+                <label style={S.label}>Descripción del Frente</label>
                 <textarea
                   style={S.textarea}
                   value={character.battlefront_desc || character.clan_desc}
@@ -442,18 +442,18 @@ export default function CharacterEditor() {
               </div>
             </EditorSection>
 
-            <EditorSection title="Combat Data">
+            <EditorSection title="Datos de Combate">
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                <RankField label="Off. Power" value={character.offensive_power || 'C'} onChange={v => updateField('offensive_power', v)} />
-                <RankField label="Def. Power" value={character.defensive_power || 'C'} onChange={v => updateField('defensive_power', v)} />
-                <RankField label="Mana Amount" value={character.mana_amount || 'C'} onChange={v => updateField('mana_amount', v)} />
-                <RankField label="Mana Control" value={character.mana_control || 'C'} onChange={v => updateField('mana_control', v)} />
-                <RankField label="Physical Ability" value={character.physical_ability || 'C'} onChange={v => updateField('physical_ability', v)} />
-                <RankField label="Luck" value={character.luck || 'C'} onChange={v => updateField('luck', v)} />
+                <RankField label="Poder Ofens." value={character.offensive_power || 'C'} onChange={v => updateField('offensive_power', v)} />
+                <RankField label="Poder Defens." value={character.defensive_power || 'C'} onChange={v => updateField('defensive_power', v)} />
+                <RankField label="Cantidad Maná" value={character.mana_amount || 'C'} onChange={v => updateField('mana_amount', v)} />
+                <RankField label="Control Maná" value={character.mana_control || 'C'} onChange={v => updateField('mana_control', v)} />
+                <RankField label="Habilidad Fís." value={character.physical_ability || 'C'} onChange={v => updateField('physical_ability', v)} />
+                <RankField label="Suerte" value={character.luck || 'C'} onChange={v => updateField('luck', v)} />
               </div>
             </EditorSection>
 
-            <EditorSection title="Noble Arts (AN)">
+            <EditorSection title="Artes Nobles (AN)">
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {(character.noble_arts || []).map((art) => (
                   <div
@@ -470,10 +470,10 @@ export default function CharacterEditor() {
                       <Trash2 size={12} />
                     </button>
                     <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '0.5rem', paddingRight: '1.5rem' }}>
-                      <input style={S.input} placeholder="Art name" value={art.name} onChange={e => updateNobleArt(art.id, 'name', e.target.value)} onFocus={onFocus} onBlur={onBlur} />
-                      <input style={S.input} placeholder="Cost" value={art.cost} onChange={e => updateNobleArt(art.id, 'cost', e.target.value)} onFocus={onFocus} onBlur={onBlur} />
+                      <input style={S.input} placeholder="Nombre del arte" value={art.name} onChange={e => updateNobleArt(art.id, 'name', e.target.value)} onFocus={onFocus} onBlur={onBlur} />
+                      <input style={S.input} placeholder="Costo" value={art.cost} onChange={e => updateNobleArt(art.id, 'cost', e.target.value)} onFocus={onFocus} onBlur={onBlur} />
                     </div>
-                    <textarea style={{ ...S.textarea, minHeight: '52px' }} placeholder="Description…" value={art.description} onChange={e => updateNobleArt(art.id, 'description', e.target.value)} onFocus={onFocus} onBlur={onBlur} />
+                    <textarea style={{ ...S.textarea, minHeight: '52px' }} placeholder="Descripción…" value={art.description} onChange={e => updateNobleArt(art.id, 'description', e.target.value)} onFocus={onFocus} onBlur={onBlur} />
                   </div>
                 ))}
                 <button
@@ -482,14 +482,14 @@ export default function CharacterEditor() {
                   onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#0353a4'; (e.currentTarget as HTMLButtonElement).style.borderColor = '#0353a4'; }}
                   onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; }}
                 >
-                  <Plus size={13} /> Add Noble Art
+                  <Plus size={13} /> Agregar Arte Noble
                 </button>
               </div>
             </EditorSection>
 
-            <EditorSection title="Flavor">
+            <EditorSection title="Personalidad">
               <div>
-                <label style={S.label}>Quote</label>
+                <label style={S.label}>Frase / Cita</label>
                 <textarea
                   style={{ ...S.textarea, fontStyle: 'italic' }}
                   value={character.quote}
@@ -507,21 +507,21 @@ export default function CharacterEditor() {
         {activeTab === 'design' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
-            <EditorSection title="Typography">
+            <EditorSection title="Tipografía">
               <div>
-                <label style={S.label}>Heading Font</label>
+                <label style={S.label}>Fuente de Títulos</label>
                 <select style={S.select} value={character.font_heading || 'var(--font-cormorant)'} onChange={e => updateField('font_heading', e.target.value)} onFocus={onFocus} onBlur={onBlur}>
                   {FONTS_HEADING.map(f => <option key={f.value} value={f.value}>{f.name}</option>)}
                 </select>
               </div>
               <div>
-                <label style={S.label}>Body Font</label>
+                <label style={S.label}>Fuente de Textos</label>
                 <select style={S.select} value={character.font_body || 'var(--font-inter)'} onChange={e => updateField('font_body', e.target.value)} onFocus={onFocus} onBlur={onBlur}>
                   {FONTS_BODY.map(f => <option key={f.value} value={f.value}>{f.name}</option>)}
                 </select>
               </div>
               <div>
-                <label style={S.label}>Text Color</label>
+                <label style={S.label}>Color del Texto</label>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   <input type="color" value={character.text_color || '#2D2D2D'} onChange={e => updateField('text_color', e.target.value)} style={{ width: '2.5rem', height: '2.1rem', padding: '0.1rem', cursor: 'pointer', border: '1px solid var(--border)', backgroundColor: 'var(--surface-alt)' }} />
                   <input style={{ ...S.input, flex: 1 }} type="text" value={character.text_color || '#2D2D2D'} onChange={e => updateField('text_color', e.target.value)} onFocus={onFocus} onBlur={onBlur} />
@@ -529,21 +529,21 @@ export default function CharacterEditor() {
               </div>
             </EditorSection>
 
-            <EditorSection title="Background & Frame">
+            <EditorSection title="Fondo & Marco">
               <div>
-                <label style={S.label}>Background Color</label>
+                <label style={S.label}>Color de Fondo</label>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   <input type="color" value={character.background_color || '#FFF5F5'} onChange={e => updateField('background_color', e.target.value)} style={{ width: '2.5rem', height: '2.1rem', padding: '0.1rem', cursor: 'pointer', border: '1px solid var(--border)', backgroundColor: 'var(--surface-alt)' }} />
                   <input style={{ ...S.input, flex: 1 }} type="text" value={character.background_color || '#FFF5F5'} onChange={e => updateField('background_color', e.target.value)} onFocus={onFocus} onBlur={onBlur} />
                 </div>
               </div>
 
-              <Field label="Background Image URL" value={character.background_image_url || ''} onChange={v => updateField('background_image_url', v)} placeholder="https://..." />
+              <Field label="URL Imagen de Fondo" value={character.background_image_url || ''} onChange={v => updateField('background_image_url', v)} placeholder="https://..." />
 
               {character.background_image_url && (
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem' }}>
-                    <label style={S.label}>Overlay Opacity</label>
+                    <label style={S.label}>Opacidad del Overlay</label>
                     <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--text-muted)' }}>
                       {Math.round((character.background_overlay_opacity ?? 0.5) * 100)}%
                     </span>
@@ -558,20 +558,20 @@ export default function CharacterEditor() {
               )}
 
               <div>
-                <label style={S.label}>Frame Style</label>
+                <label style={S.label}>Estilo del Marco</label>
                 <select style={S.select} value={character.frame_style || 'ornate'} onChange={e => updateField('frame_style', e.target.value)} onFocus={onFocus} onBlur={onBlur}>
-                  <option value="ornate">Ornate (Default)</option>
-                  <option value="simple">Simple Border</option>
-                  <option value="tech">Tech / Modern</option>
-                  <option value="none">None (Rounded)</option>
+                  <option value="ornate">Ornamentado (Normal)</option>
+                  <option value="simple">Borde Simple (Grueso)</option>
+                  <option value="tech">Tecnológico (Militar)</option>
+                  <option value="none">Sin Marco (Mica)</option>
                 </select>
               </div>
             </EditorSection>
 
             {/* ── Info Cards ──────────────────────────── */}
-            <EditorSection title="Info Cards">
+            <EditorSection title="Cajas de Información">
               <div>
-                <label style={S.label}>Card Background Color</label>
+                <label style={S.label}>Color de Fondo (Cajas)</label>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   <input
                     type="color"
@@ -591,7 +591,7 @@ export default function CharacterEditor() {
               </div>
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem' }}>
-                  <label style={S.label}>Card Opacity</label>
+                  <label style={S.label}>Opacidad del Fondo</label>
                   <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--text-muted)' }}>
                     {Math.round((character.card_bg_opacity ?? 0.4) * 100)}%
                   </span>
@@ -606,9 +606,9 @@ export default function CharacterEditor() {
             </EditorSection>
 
             {/* ── Blaze Image ─────────────────────────── */}
-            <EditorSection title="Blaze Image">
+            <EditorSection title="Imagen del Blaze">
               <div>
-                <label style={S.label}>Portrait Size</label>
+                <label style={S.label}>Tamaño del Retrato</label>
                 <select
                   style={S.select}
                   value={character.blaze_image_size || 'md'}
@@ -616,14 +616,14 @@ export default function CharacterEditor() {
                   onFocus={onFocus}
                   onBlur={onBlur}
                 >
-                  <option value="sm">Small</option>
-                  <option value="md">Medium (default)</option>
-                  <option value="lg">Large</option>
-                  <option value="full">Full width</option>
+                  <option value="sm">Pequeño</option>
+                  <option value="md">Mediano (Normal)</option>
+                  <option value="lg">Grande</option>
+                  <option value="full">Ancho Completo</option>
                 </select>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem 0' }}>
-                <label style={{ ...S.label, margin: 0 }}>Show Border &amp; Shadow</label>
+                <label style={{ ...S.label, margin: 0 }}>Mostrar Borde y Sombra</label>
                 <button
                   role="switch"
                   aria-checked={character.blaze_show_border !== false}
@@ -669,7 +669,7 @@ export default function CharacterEditor() {
                 onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#0353a4'; (e.currentTarget as HTMLButtonElement).style.borderColor = '#0353a4'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; }}
               >
-                <Type size={12} /> Text
+                <Type size={12} /> Texto
               </button>
               <button
                 style={S.outlineBtn}
@@ -677,7 +677,7 @@ export default function CharacterEditor() {
                 onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#0353a4'; (e.currentTarget as HTMLButtonElement).style.borderColor = '#0353a4'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; }}
               >
-                <ImageIcon size={12} /> Image
+                <ImageIcon size={12} /> Imagen
               </button>
               <button
                 style={S.outlineBtn}
@@ -685,7 +685,7 @@ export default function CharacterEditor() {
                 onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#0353a4'; (e.currentTarget as HTMLButtonElement).style.borderColor = '#0353a4'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; }}
               >
-                <Minus size={12} /> Separator
+                <Minus size={12} /> Separador
               </button>
             </div>
 
@@ -716,7 +716,7 @@ export default function CharacterEditor() {
           onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#023e7d'; }}
           onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#0353a4'; }}
         >
-          <Share2 size={14} /> Share Character
+          <Share2 size={14} /> Compartir Personaje
         </button>
       </div>
     </div>
@@ -793,11 +793,11 @@ function SortableSectionRow({ section, onRemove, onUpdate }: { section: Section;
 
   const getLabel = () => {
     switch (section.type) {
-      case 'stats': return 'Basic Stats';
-      case 'blaze': return 'Blaze & Elements';
-      case 'battlefront': return 'Battlefront';
-      case 'combat_data': return 'Combat Data';
-      case 'noble_arts': return 'Noble Arts';
+      case 'stats': return 'Estadísticas Básicas';
+      case 'blaze': return 'Blaze & Elementos';
+      case 'battlefront': return 'Frente de Batalla';
+      case 'combat_data': return 'Datos de Combate';
+      case 'noble_arts': return 'Artes Nobles';
       case 'separator': return 'Separator';
       case 'custom_text': return section.title || 'Custom Text';
       case 'custom_image': return 'Custom Image';

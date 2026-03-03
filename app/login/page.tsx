@@ -21,7 +21,7 @@ function LoginForm() {
   useEffect(() => {
     const error = searchParams.get('error');
     if (error === 'auth_callback_failed') {
-      toast.error('Email confirmation failed. Please try again.');
+      toast.error('La confirmación de correo falló. Inténtalo de nuevo.');
     }
   }, [searchParams]);
 
@@ -41,16 +41,16 @@ function LoginForm() {
         });
         if (error) throw error;
         setEmailSent(true);
-        toast.success('Confirmation email sent — check your inbox!');
+        toast.success('Correo de confirmación enviado — ¡revisa tu bandeja de entrada!');
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        toast.success('Access granted. Welcome back.');
+        toast.success('Acceso concedido. Bienvenido de nuevo.');
         router.push('/dashboard');
         router.refresh();
       }
     } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : 'An error occurred';
+      const msg = error instanceof Error ? error.message : 'Ocurrió un error';
       toast.error(msg);
     } finally {
       setLoading(false);
@@ -93,7 +93,7 @@ function LoginForm() {
         className="fixed top-5 left-6"
         style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', letterSpacing: '0.18em', color: 'var(--glow)', opacity: 0.7 }}
       >
-        KIZOKU NO YOZAI // SECURE ACCESS PORTAL
+        KIZOKU NO YOZAI // PORTAL DE ACCESO SEGURO
       </div>
 
       <div
@@ -117,7 +117,7 @@ function LoginForm() {
         >
           <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: 'var(--glow)', boxShadow: '0 0 6px var(--glow)' }} />
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', letterSpacing: '0.15em', color: 'var(--text-muted)' }}>
-            {isSignUp ? 'ENROLL // NEW CADET' : 'AUTHENTICATE // RETURNING OFFICER'}
+            {isSignUp ? 'RECLUTAR // NUEVO CADETE' : 'AUTENTICAR // OFICIAL'}
           </span>
         </div>
 
@@ -137,15 +137,15 @@ function LoginForm() {
               }}
               className="text-2xl font-bold uppercase text-center"
             >
-              {isSignUp ? 'Enroll Cadet' : 'Access Vault'}
+              {isSignUp ? 'Reclutar Cadete' : 'Acceder a Bóveda'}
             </h1>
             <p
               style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--text-muted)', letterSpacing: '0.1em' }}
               className="mt-2 text-center"
             >
               {isSignUp
-                ? 'Create your officer profile to begin'
-                : 'Enter credentials to access your character files'}
+                ? 'Crea tu perfil de oficial para comenzar'
+                : 'Ingresa tus credenciales para acceder a tus archivos'}
             </p>
           </div>
 
@@ -160,26 +160,26 @@ function LoginForm() {
               }}
             >
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', letterSpacing: '0.15em', color: 'var(--glow)', marginBottom: '0.5rem' }}>
-                ◈ TRANSMISSION SENT
+                ◈ TRANSMISIÓN ENVIADA
               </div>
               <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.7 }}>
-                Check <strong style={{ color: 'var(--text)' }}>{email}</strong> for a confirmation link to complete your enrollment.
+                Revisa <strong style={{ color: 'var(--text)' }}>{email}</strong> para un enlace de confirmación y completar tu registro.
               </p>
               <button
                 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--glow)', marginTop: '1rem', background: 'none', border: 'none', cursor: 'pointer', letterSpacing: '0.1em' }}
                 onClick={() => { setEmailSent(false); setIsSignUp(false); }}
               >
-                Return to Sign In →
+                Volver a Iniciar Sesión →
               </button>
             </div>
           ) : (
             <form onSubmit={handleAuth} className="space-y-5">
               {isSignUp && (
                 <div>
-                  <label style={labelStyle}>Username</label>
+                  <label style={labelStyle}>Nombre de usuario</label>
                   <input
                     type="text"
-                    placeholder="cadet_handle"
+                    placeholder="cadete_nombre"
                     style={inputStyle}
                     value={username}
                     onChange={e => setUsername(e.target.value)}
@@ -190,11 +190,11 @@ function LoginForm() {
               )}
 
               <div>
-                <label htmlFor="email" style={labelStyle}>Email Address</label>
+                <label htmlFor="email" style={labelStyle}>Correo Electrónico</label>
                 <input
                   id="email"
                   type="email"
-                  placeholder="officer@academy.xyz"
+                  placeholder="oficial@academia.xyz"
                   style={inputStyle}
                   value={email}
                   onChange={e => setEmail(e.target.value)}
@@ -206,7 +206,7 @@ function LoginForm() {
               </div>
 
               <div>
-                <label htmlFor="password" style={labelStyle}>Password</label>
+                <label htmlFor="password" style={labelStyle}>Contraseña</label>
                 <input
                   id="password"
                   type="password"
@@ -254,11 +254,11 @@ function LoginForm() {
                 }}
               >
                 {loading ? (
-                  <span className="animate-pulse">Processing…</span>
+                  <span className="animate-pulse">Procesando…</span>
                 ) : isSignUp ? (
-                  <><UserPlus size={14} /> Enroll</>
+                  <><UserPlus size={14} /> Registrar</>
                 ) : (
-                  <><LogIn size={14} /> Authenticate <ChevronRight size={14} /></>
+                  <><LogIn size={14} /> Autenticar <ChevronRight size={14} /></>
                 )}
               </button>
             </form>
@@ -284,8 +284,8 @@ function LoginForm() {
                 onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
               >
                 {isSignUp
-                  ? '← Already enrolled? Sign in'
-                  : 'New recruit? → Request enrollment'}
+                  ? '← ¿Ya estás registrado? Inicia sesión'
+                  : '¿Nuevo recluta? → Solicitar registro'}
               </button>
             </div>
           )}

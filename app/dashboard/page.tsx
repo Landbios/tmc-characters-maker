@@ -40,7 +40,7 @@ export default function DashboardPage() {
         .order('created_at', { ascending: false });
 
       if (error) {
-        toast.error('Failed to load characters');
+        toast.error('Error al cargar personajes');
       } else {
         setCharacters(data || []);
       }
@@ -59,9 +59,9 @@ export default function DashboardPage() {
       .insert({ user_id: currentUser.id, content: trimmed });
     setFeedbackSubmitting(false);
     if (error) {
-      toast.error('Failed to send feedback. Please try again.');
+      toast.error('Error al enviar tus sugerencias. Intenta nuevamente.');
     } else {
-      toast.success('Feedback received — thank you!');
+      toast.success('Comentarios recibidos — ¡gracias!');
       setFeedbackText('');
       setFeedbackOpen(false);
     }
@@ -73,13 +73,13 @@ export default function DashboardPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('CONFIRM DELETION: This action is irreversible.')) return;
+    if (!confirm('CONFIRMAR ELIMINACIÓN: Esta acción es irreversible.')) return;
     const { error } = await supabase.from('characters').delete().eq('id', id);
     if (error) {
-      toast.error('Failed to delete character');
+      toast.error('Error al eliminar personaje');
     } else {
       setCharacters(characters.filter(c => c.id !== id));
-      toast.success('Character file purged from system');
+      toast.success('Archivo de personaje purgado del sistema');
     }
   };
 
@@ -96,7 +96,7 @@ export default function DashboardPage() {
           style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}
           className="text-xs tracking-[0.2em] uppercase animate-pulse"
         >
-          Authenticating — please wait…
+          Autenticando — por favor espere…
         </p>
       </div>
     );
@@ -173,7 +173,7 @@ export default function DashboardPage() {
         {/* ── Header ──────────────────────────────────── */}
         <div className="mb-10">
           <p className="mono-label mb-2" style={{ color: 'var(--glow)' }}>
-            ◈ KIZOKU NO YOZAI · CLASSIFICATION: CADET
+            ◈ KIZOKU NO YOZAI · CLASIFICACIÓN: CADETE
           </p>
 
           <div className="flex items-start justify-between flex-wrap gap-4">
@@ -190,7 +190,7 @@ export default function DashboardPage() {
                 Character Vault
               </h1>
               <p className="mono-label mt-1" style={{ color: 'var(--text-muted)' }}>
-                {characters.length} file{characters.length !== 1 ? 's' : ''} on record
+                {characters.length} archivo{characters.length !== 1 ? 's' : ''} en el registro
               </p>
             </div>
 
@@ -198,7 +198,7 @@ export default function DashboardPage() {
             <div className="flex items-center gap-3">
               {/* Feedback button */}
               <button
-                title="Leave feedback or suggestion"
+                title="Dejar sugerencias o feedback"
                 style={outlineBtnStyle}
                 onClick={() => setFeedbackOpen(true)}
                 onMouseEnter={e => {
@@ -211,7 +211,7 @@ export default function DashboardPage() {
                 }}
               >
                 <MessageSquarePlus className="inline mr-2 h-3.5 w-3.5" />
-                Feedback
+                Sugerencias
               </button>
               <button
                 style={outlineBtnStyle}
@@ -226,7 +226,7 @@ export default function DashboardPage() {
                 }}
               >
                 <LogOut className="inline mr-2 h-3.5 w-3.5" />
-                Sign Out
+                Cerrar Sesión
               </button>
               <Link href="/">
                 <button
@@ -239,7 +239,7 @@ export default function DashboardPage() {
                   }}
                 >
                   <Plus className="inline mr-2 h-3.5 w-3.5" />
-                  New Character
+                  Nuevo Personaje
                 </button>
               </Link>
             </div>
@@ -261,10 +261,10 @@ export default function DashboardPage() {
           >
             <Shield style={{ color: 'var(--border)' }} className="w-12 h-12 mx-auto mb-4 opacity-40" />
             <p className="mono-label mb-1" style={{ color: 'var(--text-muted)' }}>
-              No records found in the vault
+              No se encontraron registros en la bóveda
             </p>
             <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>
-              You haven&apos;t enrolled any characters yet.
+              Aún no has reclutado ningún personaje.
             </p>
             <Link href="/">
               <button
@@ -277,7 +277,7 @@ export default function DashboardPage() {
                 }}
               >
                 <Plus className="inline mr-2 h-3.5 w-3.5" />
-                Enroll first character
+                Reclutar primer personaje
               </button>
             </Link>
           </div>
@@ -301,7 +301,7 @@ export default function DashboardPage() {
                 />
                 <input
                   type="text"
-                  placeholder="Search files by name, subtitle, quote…"
+                  placeholder="Buscar archivos por nombre, título, cita…"
                   style={{
                     backgroundColor: 'var(--surface-alt)',
                     border: '1px solid var(--border-light)',
@@ -335,7 +335,7 @@ export default function DashboardPage() {
                   value={filterBattlefront}
                   onChange={e => { setFilterBattlefront(e.target.value); setCurrentPage(1); }}
                 >
-                  <option value="">All Battlefronts</option>
+                  <option value="">Todos los Frentes</option>
                   {Array.from(new Set(characters.map(c => c.battlefront_name || c.clan_name).filter(Boolean))).map(bf => (
                     <option key={bf} value={bf}>{bf}</option>
                   ))}
@@ -393,7 +393,7 @@ export default function DashboardPage() {
                         padding: '2px 6px',
                       }}
                     >
-                      FILE
+                      ARCHIVO
                     </div>
                     {/* Name overlay */}
                     <div className="absolute bottom-3 left-4">
@@ -438,7 +438,7 @@ export default function DashboardPage() {
                     <div className="flex items-center gap-1">
                       <Link href={`/character/${char.id}`}>
                         <button
-                          title="View character"
+                          title="Ver personaje"
                           style={iconBtnStyle}
                           onMouseEnter={e => {
                             (e.currentTarget as HTMLButtonElement).style.color = 'var(--glow)';
@@ -454,7 +454,7 @@ export default function DashboardPage() {
                       </Link>
                       <Link href={`/?id=${char.id}`}>
                         <button
-                          title="Edit character"
+                          title="Editar personaje"
                           style={iconBtnStyle}
                           onMouseEnter={e => {
                             (e.currentTarget as HTMLButtonElement).style.color = 'var(--glow)';
@@ -469,7 +469,7 @@ export default function DashboardPage() {
                         </button>
                       </Link>
                       <button
-                        title="Delete character"
+                        title="Eliminar personaje"
                         style={{ ...iconBtnStyle }}
                         onClick={() => handleDelete(char.id)}
                         onMouseEnter={e => {
@@ -495,7 +495,7 @@ export default function DashboardPage() {
                 className="text-center py-12"
                 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-muted)', letterSpacing: '0.1em' }}
               >
-                ◈ NO RECORDS MATCH YOUR CURRENT CRITERIA
+                ◈ NO HAY REGISTROS QUE COINCIDAN CON LOS CRITERIOS
               </div>
             )}
 
@@ -580,7 +580,7 @@ export default function DashboardPage() {
             {/* Modal header */}
             <div style={{ borderBottom: '1px solid var(--border)', padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'var(--surface-alt)' }}>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--glow)' }}>
-                ◈ Submit Feedback
+                ◈ Enviar Sugerencia
               </span>
               <button
                 onClick={() => setFeedbackOpen(false)}
@@ -593,14 +593,14 @@ export default function DashboardPage() {
             {/* Modal body */}
             <div style={{ padding: '1.25rem' }}>
               <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '0.75rem', lineHeight: 1.6 }}>
-                Share your suggestions, bug reports, or ideas for improving the Character Vault.
+                Comparte tus sugerencias, reportes de bugs o ideas para mejorar la plataforma de Personajes.
               </p>
               <textarea
                 value={feedbackText}
                 onChange={e => setFeedbackText(e.target.value.slice(0, 1000))}
                 maxLength={1000}
                 rows={6}
-                placeholder="Your message here…"
+                placeholder="Tu mensaje aquí…"
                 style={{
                   width: '100%',
                   backgroundColor: 'var(--surface-alt)',
@@ -648,7 +648,7 @@ export default function DashboardPage() {
                   }}
                 >
                   <Send size={13} />
-                  {feedbackSubmitting ? 'Sending…' : 'Send'}
+                  {feedbackSubmitting ? 'Enviando…' : 'Enviar'}
                 </button>
               </div>
             </div>
