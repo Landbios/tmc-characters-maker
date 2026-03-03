@@ -1,0 +1,525 @@
+'use client';
+
+import { createClient } from '@/utils/supabase/client';
+import { useEffect, useState } from 'react';
+import { Character } from '@/types/character';
+import { Edit, Trash2, Eye, Plus, LogOut, Search, ChevronLeft, ChevronRight, Shield } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import Image from 'next/image';
+
+const ITEMS_PER_PAGE = 6;
+
+export default function DashboardPage() {
+  const [characters, setCharacters] = useState<Character[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterBattlefront, setFilterBattlefront] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const supabase = createClient();
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchCharacters = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.push('/login');
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('characters')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        toast.error('Failed to load characters');
+      } else {
+        setCharacters(data || []);
+      }
+      setLoading(false);
+    };
+
+    fetchCharacters();
+  }, [supabase, router]);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.push('/login');
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('CONFIRM DELETION: This action is irreversible.')) return;
+    const { error } = await supabase.from('characters').delete().eq('id', id);
+    if (error) {
+      toast.error('Failed to delete character');
+    } else {
+      setCharacters(characters.filter(c => c.id !== id));
+      toast.success('Character file purged from system');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div
+        style={{ backgroundColor: 'var(--bg)', color: 'var(--text)' }}
+        className="min-h-screen flex flex-col items-center justify-center gap-3"
+      >
+        {/* Dot grid overlay */}
+        <div className="fixed inset-0 grid-overlay pointer-events-none" />
+        <Shield style={{ color: 'var(--glow)' }} className="w-10 h-10 animate-pulse" />
+        <p
+          style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}
+          className="text-xs tracking-[0.2em] uppercase animate-pulse"
+        >
+          Authenticating — please wait…
+        </p>
+      </div>
+    );
+  }
+
+  /* ── Derived State ─────────────────────────────────────── */
+  const filteredCharacters = characters.filter((c) => {
+    const t = searchTerm.toLowerCase();
+    const textMatch = !searchTerm || [c.name, c.subtitle, c.quote].some(f => f && f.toLowerCase().includes(t));
+    const bf = c.battlefront_name || c.clan_name;
+    const filterMatch = !filterBattlefront || bf === filterBattlefront;
+    return textMatch && filterMatch;
+  });
+
+  const sortedCharacters = [...filteredCharacters].sort((a, b) => a.name?.localeCompare(b.name || '') || 0);
+  const totalPages = Math.ceil(sortedCharacters.length / ITEMS_PER_PAGE);
+  const paginatedCharacters = sortedCharacters.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  /* ── Shared inline styles ──────────────────────────────── */
+  const surfaceStyle = {
+    backgroundColor: 'var(--surface)',
+    border: '1px solid var(--border)',
+    color: 'var(--text)',
+  };
+
+  const accentBtnStyle: React.CSSProperties = {
+    backgroundColor: '#0353a4',
+    color: '#fff',
+    border: '1px solid #0353a4',
+    fontFamily: 'var(--font-mono)',
+    fontSize: '0.7rem',
+    letterSpacing: '0.15em',
+    textTransform: 'uppercase' as const,
+    padding: '0.45rem 1rem',
+    cursor: 'pointer',
+    transition: 'background-color 0.2s',
+  };
+
+  const outlineBtnStyle: React.CSSProperties = {
+    backgroundColor: 'transparent',
+    color: 'var(--accent)',
+    border: '1px solid var(--border)',
+    fontFamily: 'var(--font-mono)',
+    fontSize: '0.7rem',
+    letterSpacing: '0.15em',
+    textTransform: 'uppercase' as const,
+    padding: '0.45rem 1rem',
+    cursor: 'pointer',
+    transition: 'border-color 0.2s, color 0.2s',
+  };
+
+  const iconBtnStyle: React.CSSProperties = {
+    backgroundColor: 'transparent',
+    border: '1px solid transparent',
+    color: 'var(--text-muted)',
+    padding: '0.35rem',
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'color 0.2s, border-color 0.2s',
+  };
+
+  return (
+    <div
+      style={{ backgroundColor: 'var(--bg)', color: 'var(--text)' }}
+      className="min-h-screen relative"
+    >
+      {/* ── Dot-grid background overlay ───────────────── */}
+      <div className="fixed inset-0 grid-overlay pointer-events-none" />
+
+      <div className="relative z-10 max-w-6xl mx-auto px-6 py-10">
+
+        {/* ── Header ──────────────────────────────────── */}
+        <div className="mb-10">
+          <p className="mono-label mb-2" style={{ color: 'var(--glow)' }}>
+            ◈ KIZOKU NO YOZAI · CLASSIFICATION: CADET
+          </p>
+
+          <div className="flex items-start justify-between flex-wrap gap-4">
+            <div>
+              <h1
+                style={{
+                  fontFamily: 'var(--font-cinzel)',
+                  color: 'var(--text)',
+                  textShadow: '0 0 24px rgba(59,130,246,0.35)',
+                  letterSpacing: '0.08em',
+                }}
+                className="text-4xl font-bold uppercase"
+              >
+                Character Vault
+              </h1>
+              <p className="mono-label mt-1" style={{ color: 'var(--text-muted)' }}>
+                {characters.length} file{characters.length !== 1 ? 's' : ''} on record
+              </p>
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex items-center gap-3">
+              <button
+                style={outlineBtnStyle}
+                onClick={handleSignOut}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--glow)';
+                  (e.currentTarget as HTMLButtonElement).style.color = 'var(--glow)';
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)';
+                  (e.currentTarget as HTMLButtonElement).style.color = 'var(--accent)';
+                }}
+              >
+                <LogOut className="inline mr-2 h-3.5 w-3.5" />
+                Sign Out
+              </button>
+              <Link href="/">
+                <button
+                  style={accentBtnStyle}
+                  onMouseEnter={e => {
+                    (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#023e7d';
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#0353a4';
+                  }}
+                >
+                  <Plus className="inline mr-2 h-3.5 w-3.5" />
+                  New Character
+                </button>
+              </Link>
+            </div>
+          </div>
+
+          {/* Section divider with glow */}
+          <div className="rule-glow mt-6" />
+        </div>
+
+        {/* ── Empty state ─────────────────────────────── */}
+        {characters.length === 0 ? (
+          <div
+            style={{
+              border: '1px dashed var(--border)',
+              backgroundColor: 'var(--surface)',
+              color: 'var(--text-muted)',
+            }}
+            className="text-center py-24 px-8"
+          >
+            <Shield style={{ color: 'var(--border)' }} className="w-12 h-12 mx-auto mb-4 opacity-40" />
+            <p className="mono-label mb-1" style={{ color: 'var(--text-muted)' }}>
+              No records found in the vault
+            </p>
+            <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>
+              You haven&apos;t enrolled any characters yet.
+            </p>
+            <Link href="/">
+              <button
+                style={accentBtnStyle}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#023e7d';
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#0353a4';
+                }}
+              >
+                <Plus className="inline mr-2 h-3.5 w-3.5" />
+                Enroll first character
+              </button>
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-6">
+
+            {/* ── Search / Filter bar ─────────────────── */}
+            <div
+              style={{
+                backgroundColor: 'var(--surface)',
+                border: '1px solid var(--border)',
+                boxShadow: '0 0 12px rgba(59,130,246,0.08)',
+              }}
+              className="flex flex-col md:flex-row gap-3 p-4"
+            >
+              {/* Search */}
+              <div className="flex-1 relative">
+                <Search
+                  style={{ color: 'var(--text-muted)' }}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4"
+                />
+                <input
+                  type="text"
+                  placeholder="Search files by name, subtitle, quote…"
+                  style={{
+                    backgroundColor: 'var(--surface-alt)',
+                    border: '1px solid var(--border-light)',
+                    color: 'var(--text)',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.8rem',
+                    outline: 'none',
+                  }}
+                  className="w-full pl-10 pr-4 py-2 transition-colors"
+                  onFocus={e => (e.currentTarget.style.borderColor = 'var(--glow)')}
+                  onBlur={e => (e.currentTarget.style.borderColor = 'var(--border-light)')}
+                  value={searchTerm}
+                  onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                />
+              </div>
+
+              {/* Filter */}
+              <div className="w-full md:w-56">
+                <select
+                  style={{
+                    backgroundColor: 'var(--surface-alt)',
+                    border: '1px solid var(--border-light)',
+                    color: 'var(--text)',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.8rem',
+                    outline: 'none',
+                  }}
+                  className="w-full px-3 py-2 appearance-none transition-colors"
+                  onFocus={e => (e.currentTarget.style.borderColor = 'var(--glow)')}
+                  onBlur={e => (e.currentTarget.style.borderColor = 'var(--border-light)')}
+                  value={filterBattlefront}
+                  onChange={e => { setFilterBattlefront(e.target.value); setCurrentPage(1); }}
+                >
+                  <option value="">All Battlefronts</option>
+                  {Array.from(new Set(characters.map(c => c.battlefront_name || c.clan_name).filter(Boolean))).map(bf => (
+                    <option key={bf} value={bf}>{bf}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* ── Character Grid ──────────────────────── */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {paginatedCharacters.map((char) => (
+                <div
+                  key={char.id}
+                  style={{
+                    backgroundColor: 'var(--surface)',
+                    border: '1px solid var(--border)',
+                    transition: 'box-shadow 0.25s, transform 0.25s, border-color 0.25s',
+                  }}
+                  className="overflow-hidden group cursor-default"
+                  onMouseEnter={e => {
+                    const el = e.currentTarget as HTMLDivElement;
+                    el.style.borderColor = '#0353a4';
+                    el.style.transform = 'translateY(-2px)';
+                  }}
+                  onMouseLeave={e => {
+                    const el = e.currentTarget as HTMLDivElement;
+                    el.style.borderColor = 'var(--border)';
+                    el.style.transform = 'translateY(0)';
+                  }}
+                >
+                  {/* Card image */}
+                  <div className="relative h-48 w-full">
+                    <Image
+                      src={char.image_url || 'https://picsum.photos/seed/magic/800/600'}
+                      alt={char.name}
+                      fill
+                      className="object-cover"
+                    />
+                    {/* Blue-tinted gradient overlay */}
+                    <div
+                      className="absolute inset-0"
+                      style={{
+                        background: 'linear-gradient(to top, rgba(3,7,18,0.85) 0%, rgba(14,30,70,0.4) 50%, transparent 100%)',
+                      }}
+                    />
+                    {/* Classification badge top-right */}
+                    <div
+                      className="absolute top-3 right-3"
+                      style={{
+                        backgroundColor: 'rgba(3,7,18,0.7)',
+                        border: '1px solid var(--border)',
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: '0.6rem',
+                        letterSpacing: '0.1em',
+                        color: 'var(--glow)',
+                        padding: '2px 6px',
+                      }}
+                    >
+                      FILE
+                    </div>
+                    {/* Name overlay */}
+                    <div className="absolute bottom-3 left-4">
+                      <h3
+                        style={{
+                          fontFamily: 'var(--font-cinzel)',
+                          color: '#fff',
+                          letterSpacing: '0.05em',
+                          textShadow: '0 0 12px rgba(59,130,246,0.6)',
+                        }}
+                        className="text-lg font-bold uppercase"
+                      >
+                        {char.name}
+                      </h3>
+                      {char.subtitle && (
+                        <p
+                          style={{ fontFamily: 'var(--font-mono)', color: 'rgba(147,197,253,0.85)' }}
+                          className="text-[0.65rem] tracking-widest uppercase mt-0.5"
+                        >
+                          {char.subtitle}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Card footer */}
+                  <div
+                    style={{
+                      backgroundColor: 'var(--surface-alt)',
+                      borderTop: '1px solid var(--border)',
+                      padding: '0.6rem 1rem',
+                    }}
+                    className="flex justify-between items-center"
+                  >
+                    <span
+                      style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--text-muted)' }}
+                    >
+                      {new Date(char.created_at!).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                    </span>
+
+                    {/* Action icons */}
+                    <div className="flex items-center gap-1">
+                      <Link href={`/character/${char.id}`}>
+                        <button
+                          title="View character"
+                          style={iconBtnStyle}
+                          onMouseEnter={e => {
+                            (e.currentTarget as HTMLButtonElement).style.color = 'var(--glow)';
+                            (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)';
+                          }}
+                          onMouseLeave={e => {
+                            (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)';
+                            (e.currentTarget as HTMLButtonElement).style.borderColor = 'transparent';
+                          }}
+                        >
+                          <Eye size={15} />
+                        </button>
+                      </Link>
+                      <Link href={`/?id=${char.id}`}>
+                        <button
+                          title="Edit character"
+                          style={iconBtnStyle}
+                          onMouseEnter={e => {
+                            (e.currentTarget as HTMLButtonElement).style.color = 'var(--glow)';
+                            (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)';
+                          }}
+                          onMouseLeave={e => {
+                            (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)';
+                            (e.currentTarget as HTMLButtonElement).style.borderColor = 'transparent';
+                          }}
+                        >
+                          <Edit size={15} />
+                        </button>
+                      </Link>
+                      <button
+                        title="Delete character"
+                        style={{ ...iconBtnStyle }}
+                        onClick={() => handleDelete(char.id)}
+                        onMouseEnter={e => {
+                          (e.currentTarget as HTMLButtonElement).style.color = 'var(--danger)';
+                          (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--danger)';
+                        }}
+                        onMouseLeave={e => {
+                          (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)';
+                          (e.currentTarget as HTMLButtonElement).style.borderColor = 'transparent';
+                        }}
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* ── No results ──────────────────────────── */}
+            {paginatedCharacters.length === 0 && (
+              <div
+                className="text-center py-12"
+                style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-muted)', letterSpacing: '0.1em' }}
+              >
+                ◈ NO RECORDS MATCH YOUR CURRENT CRITERIA
+              </div>
+            )}
+
+            {/* ── Pagination ──────────────────────────── */}
+            {totalPages > 1 && (
+              <div className="flex justify-center mt-8">
+                <div
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.75rem',
+                    backgroundColor: 'var(--surface)',
+                    border: '1px solid var(--border)',
+                    padding: '0.5rem 1.25rem',
+                  }}
+                >
+                  <button
+                    style={{
+                      ...iconBtnStyle,
+                      opacity: currentPage === 1 ? 0.3 : 1,
+                      cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                    }}
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                    onMouseEnter={e => {
+                      if (currentPage !== 1) (e.currentTarget as HTMLButtonElement).style.color = 'var(--glow)';
+                    }}
+                    onMouseLeave={e => {
+                      (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)';
+                    }}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+
+                  <span
+                    style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', letterSpacing: '0.15em', color: 'var(--text-muted)' }}
+                  >
+                    {currentPage} / {totalPages}
+                  </span>
+
+                  <button
+                    style={{
+                      ...iconBtnStyle,
+                      opacity: currentPage === totalPages ? 0.3 : 1,
+                      cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                    }}
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                    onMouseEnter={e => {
+                      if (currentPage !== totalPages) (e.currentTarget as HTMLButtonElement).style.color = 'var(--glow)';
+                    }}
+                    onMouseLeave={e => {
+                      (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)';
+                    }}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

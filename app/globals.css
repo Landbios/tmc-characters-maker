@@ -1,0 +1,142 @@
+@import "tailwindcss";
+
+@theme {
+  --font-serif: var(--font-cinzel);
+  --font-sans: var(--font-inter);
+  --font-script: var(--font-script);
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* ── Light Mode: Soft slate-blue & white ──────────────── */
+  --color-academy-bg: #edf2fb;
+  /* user-specified */
+  --color-academy-surface: #FFFFFF;
+  --color-academy-surface-alt: #f5f7fc;
+  --color-academy-border: #94A3B8;
+  /* slate-400 — neutral, not pure blue */
+  --color-academy-border-light: #CBD5E1;
+  /* slate-300 */
+  --color-academy-text: #1E293B;
+  /* slate-800 */
+  --color-academy-text-muted: #64748B;
+  /* slate-500 */
+  --color-academy-accent: #0353a4;
+  /* brand blue — buttons only */
+  --color-academy-accent-hover: #023e7d;
+  --color-academy-glow: #3B82F6;
+  /* loader/icon only */
+  --color-academy-label: #475569;
+  /* slate-600 — section headers */
+  --color-academy-danger: #DC2626;
+  --color-academy-danger-hover: #B91C1C;
+
+  /* ── Dark Mode: Deep navy-black & muted blue ─────────── */
+  --color-academy-dark-bg: #040b1a;
+  --color-academy-dark-surface: #0B1527;
+  --color-academy-dark-surface-alt: #0F1D33;
+  --color-academy-dark-border: #334155;
+  /* slate-700 */
+  --color-academy-dark-border-light: #475569;
+  /* slate-600 */
+  --color-academy-dark-text: #CBD5E1;
+  /* slate-300 */
+  --color-academy-dark-text-muted: #64748B;
+  /* slate-500 */
+  --color-academy-dark-accent: #3B82F6;
+  --color-academy-dark-accent-hover: #60A5FA;
+  --color-academy-dark-glow: #60A5FA;
+  --color-academy-dark-label: #94A3B8;
+  /* slate-400 */
+  --color-academy-dark-danger: #DC2626;
+}
+
+/* ── Semantic variables ──────────────────────────────────── */
+:root {
+  --bg: var(--color-academy-bg);
+  --surface: var(--color-academy-surface);
+  --surface-alt: var(--color-academy-surface-alt);
+  --border: var(--color-academy-border);
+  --border-light: var(--color-academy-border-light);
+  --text: var(--color-academy-text);
+  --text-muted: var(--color-academy-text-muted);
+  --accent: var(--color-academy-accent);
+  --accent-hover: var(--color-academy-accent-hover);
+  --glow: var(--color-academy-glow);
+  --label: var(--color-academy-label);
+  --danger: var(--color-academy-danger);
+  --danger-hover: var(--color-academy-danger-hover);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: var(--color-academy-dark-bg);
+    --surface: var(--color-academy-dark-surface);
+    --surface-alt: var(--color-academy-dark-surface-alt);
+    --border: var(--color-academy-dark-border);
+    --border-light: var(--color-academy-dark-border-light);
+    --text: var(--color-academy-dark-text);
+    --text-muted: var(--color-academy-dark-text-muted);
+    --accent: var(--color-academy-dark-accent);
+    --accent-hover: var(--color-academy-dark-accent-hover);
+    --glow: var(--color-academy-dark-glow);
+    --label: var(--color-academy-dark-label);
+    --danger: var(--color-academy-dark-danger);
+    --danger-hover: var(--color-academy-dark-danger);
+  }
+}
+
+/* ── Base ────────────────────────────────────────────────── */
+body {
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+/* ── Custom Utilities ────────────────────────────────────── */
+@layer utilities {
+
+  /* Sci-fi dot grid — slate/neutral, not blue */
+  .grid-overlay {
+    background-image:
+      radial-gradient(circle, var(--border) 1px, transparent 1px);
+    background-size: 28px 28px;
+    opacity: 0.2;
+  }
+
+  /* Text glow — loader/shield icon only */
+  .text-glow {
+    text-shadow: 0 0 18px rgba(59, 130, 246, 0.5);
+  }
+
+  /* Subtle divider line */
+  .rule-glow {
+    border: none;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+  }
+
+  /* Monospaced label */
+  .mono-label {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+}
+
+/* ── Scrollbar ───────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
