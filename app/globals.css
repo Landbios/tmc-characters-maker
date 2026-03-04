@@ -140,3 +140,68 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
 }
+
+/* ─────────────────────────────────────────────────────────────────────
+   PWA / Standalone Display-Mode
+   Targets the app when installed (chrome header hidden, full screen).
+   Use the `standalone:` variant in Tailwind classes, e.g.:
+     <div class="standalone:pb-20">
+   ───────────────────────────────────────────────────────────────────── */
+
+/* Tailwind v4 custom variant — generates `standalone:` prefix */
+@custom-variant standalone {
+  @media (display-mode: standalone) {
+    @slot;
+  }
+}
+
+/* Safe-area env() custom properties for notch / dynamic island / home indicator */
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+}
+
+@media (display-mode: standalone) {
+
+  /* Remove tap highlight on all interactive elements */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Suppress overscroll bounce / rubber-banding */
+  html,
+  body {
+    overscroll-behavior: none;
+  }
+
+  /* Hide browser-style scrollbars inside the app shell */
+  ::-webkit-scrollbar {
+    width: 0px;
+  }
+
+  /* Full-height app shell — fills the entire screen on any device */
+  body {
+    min-height: 100dvh;
+  }
+
+  /* Increase default touch target size for buttons */
+  button,
+  a,
+  [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Push content below the status-bar notch if present */
+  .app-header {
+    padding-top: var(--safe-top);
+  }
+
+  /* Push content above the home indicator */
+  .app-footer,
+  .floating-bar {
+    padding-bottom: var(--safe-bottom);
+  }
+}

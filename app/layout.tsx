@@ -12,6 +12,15 @@ import {
 } from 'next/font/google';
 import './globals.css';
 import { Toaster } from 'sonner';
+import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
+import BottomNav from '@/components/BottomNav';
+
+export const viewport = {
+  themeColor: '#0353a4',
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+};
 
 // Serifs
 const cormorant = Cormorant_Garamond({ subsets: ['latin'], weight: ['300', '400', '500', '600', '700'], variable: '--font-cormorant', display: 'swap' });
@@ -31,6 +40,24 @@ const pinyon = Pinyon_Script({ weight: '400', subsets: ['latin'], variable: '--f
 export const metadata: Metadata = {
   title: 'TMC Character Vault',
   description: 'Create and manage your TMC characters. A sci-fi military academy character management system.',
+  applicationName: 'TMC Character Vault',
+  keywords: ['TMC', 'character', 'vault', 'academy', 'magic knight'],
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    title: 'TMC Vault',
+    statusBarStyle: 'black-translucent',
+  },
+  formatDetection: { telephone: false },
+  icons: {
+    icon: '/icons/icon-192.png',
+    apple: '/icons/icon-192.png',
+  },
+  other: {
+    'mobile-web-app-capable': 'yes',
+    'msapplication-TileColor': '#030712',
+    'msapplication-TileImage': '/icons/icon-192.png',
+  },
 };
 
 export default function RootLayout({children}: {children: React.ReactNode}) {
@@ -42,6 +69,8 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
     `}>
       <body suppressHydrationWarning style={{ backgroundColor: 'var(--bg)', color: 'var(--text)' }} className="antialiased">
         {children}
+        <BottomNav />
+        <ServiceWorkerRegistration />
         <Toaster position="top-center" richColors />
       </body>
     </html>
