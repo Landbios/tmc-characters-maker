@@ -3,7 +3,7 @@
 import { createClient } from '@/utils/supabase/client';
 import { useEffect, useState } from 'react';
 import { Character } from '@/types/character';
-import { Edit, Trash2, Eye, Plus, LogOut, Search, ChevronLeft, ChevronRight, Shield, MessageSquarePlus, X, Send } from 'lucide-react';
+import { Edit, Trash2, Eye, Plus, LogOut, Search, ChevronLeft, ChevronRight, Shield, MessageSquarePlus, X, Send, UserCircle, Users } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -201,6 +201,40 @@ export default function DashboardPage() {
 
             {/* Action buttons */}
             <div className="flex items-center flex-wrap gap-3">
+              {/* Tutores */}
+              <Link href="/tutores">
+                <button
+                  style={outlineBtnStyle}
+                  onMouseEnter={e => {
+                    (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--glow)';
+                    (e.currentTarget as HTMLButtonElement).style.color = 'var(--glow)';
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)';
+                    (e.currentTarget as HTMLButtonElement).style.color = 'var(--accent)';
+                  }}
+                >
+                  <Users className="inline mr-2 h-3.5 w-3.5" />
+                  Tutores
+                </button>
+              </Link>
+              {/* Profile */}
+              <Link href="/profile">
+                <button
+                  style={outlineBtnStyle}
+                  onMouseEnter={e => {
+                    (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--glow)';
+                    (e.currentTarget as HTMLButtonElement).style.color = 'var(--glow)';
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)';
+                    (e.currentTarget as HTMLButtonElement).style.color = 'var(--accent)';
+                  }}
+                >
+                  <UserCircle className="inline mr-2 h-3.5 w-3.5" />
+                  Mi Perfil
+                </button>
+              </Link>
               {/* Feedback button */}
               <button
                 title="Dejar sugerencias o feedback"

@@ -22,7 +22,7 @@ the overall look and feel of the app should be of a sci-fi academy.
 
 ### 2. Deliverables
 
-#### 2.1 In scope (v 0.1)
+#### 2.1 In scope (v 0.1) - DONE!
 
 ```
 ● Character sheet stylish and customizable display.
@@ -49,21 +49,18 @@ the overall look and feel of the app should be of a sci-fi academy.
 
 
 ```
-#### 2.2 Out of scope (can be added later)
+#### 2.2 V 1.1 (To be researched)
 
-
+● Roles and permissions system
+● Add Professors Sections
 ● Desktop integration with electron
 ● Mobile app integration with react native
 ● Integration with discord bot like tupperbox
-● Add characters management screen
+● Add own characters management screen
 ● Automatic character creation from discord bot
 ● Connection with the main chat module and also added a small banner with relevant data (health, mana, etc)
 ● Effects and more styles for a better more modern academia look
-● Add a search bar to search characters by name,  battlefront, etc.
-● Add a filter to filter characters by battlefront etc.
-● Add a sort to sort characters by name etc.
-● Add a pagination to paginate characters
-● Add an import system for characters
+● Add an import system for characters (and maybe a needed csv export)
 
 
 ### 3. Key design decisions

@@ -8,6 +8,7 @@ import ImageWithFallback from '@/components/ImageWithFallback';
 import html2canvas from 'html2canvas-oklch';
 import { jsPDF } from 'jspdf';
 import { Shield } from 'lucide-react';
+import { COMBAT_STATS_INFO } from '@/utils/combatStats';
 
 interface StudentIdExportProps {
   character: Character;
@@ -292,14 +293,14 @@ export default function StudentIdExport({ character }: StudentIdExportProps) {
               </div>
 
               {/* COL 3 – Blaze */}
-              <div style={{ width: '310px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '0px' }}>
+              <div style={{ width: '460px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '0px' }}>
                 <div style={{ fontSize: '10px', letterSpacing: '0.35em', color: accentSolid, textTransform: 'uppercase', marginBottom: '16px' }}>Datos de Combate & Blaze</div>
 
                 <div style={{
                   display: 'flex', gap: '20px', alignItems: 'center', padding: '16px', marginBottom: '16px',
-                  border: `1px solid ${accentMid}`, backgroundColor: boxBg,
+                  border: `1px solid ${accentMid}`, backgroundColor: boxBg, borderRadius: '8px'
                 }}>
-                  <div style={{ width: '92px', height: '92px', flexShrink: 0, position: 'relative', borderRadius: '50%', overflow: 'hidden', border: `2px solid ${accentLine}` }}>
+                  <div style={{ width: '80px', height: '80px', flexShrink: 0, position: 'relative', borderRadius: '50%', overflow: 'hidden', border: `2px solid ${accentLine}` }}>
                     {/* Blaze Image: Standard IMG with Base64 */}
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -313,8 +314,8 @@ export default function StudentIdExport({ character }: StudentIdExportProps) {
                     <div style={{ fontSize: '9px', letterSpacing: '0.3em', color: subtleText, textTransform: 'uppercase', marginBottom: '4px' }}>
                       Blaze ({character.blaze_type || '—'})
                     </div>
-                    <div style={{ fontSize: '22px', fontFamily: fontHeading, textTransform: 'uppercase', color: textColor }}>{character.element_blaze || '—'}</div>
-                    <div style={{ fontSize: '12px', color: dimText, marginTop: '4px', letterSpacing: '0.12em' }}>
+                    <div style={{ fontSize: '20px', fontFamily: fontHeading, textTransform: 'uppercase', color: textColor }}>{character.element_blaze || '—'}</div>
+                    <div style={{ fontSize: '11px', color: dimText, marginTop: '4px', letterSpacing: '0.12em' }}>
                       {[character.element_user, character.element_advanced].filter(Boolean).join(' · ')}
                     </div>
                   </div>
@@ -322,27 +323,26 @@ export default function StudentIdExport({ character }: StudentIdExportProps) {
 
                 {/* Stats */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                  {[
-                    { label: 'Ataque',  value: character.offensive_power },
-                    { label: 'Defensa', value: character.defensive_power },
-                    { label: 'Maná',    value: character.mana_amount },
-                    { label: 'Físico',  value: character.physical_ability },
-                  ].map(({ label, value }) => (
-                    <div key={label} style={{
-                      display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px',
-                      border: `1px solid ${accentMid}`, backgroundColor: boxBg,
-                    }}>
-                      <span style={{ fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', color: subtleText }}>{label}</span>
-                      <span style={{ fontSize: '22px', fontFamily: 'monospace', fontWeight: 700, color: accentGlow }}>{value}</span>
-                    </div>
-                  ))}
-                  <div style={{
-                    gridColumn: '1 / -1', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px',
-                    border: `1px solid ${accentMid}`, backgroundColor: boxBg,
-                  }}>
-                    <span style={{ fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', color: subtleText }}>Suerte</span>
-                    <span style={{ fontSize: '22px', fontFamily: 'monospace', fontWeight: 700, color: accentGlow }}>{character.luck}</span>
-                  </div>
+                  {(['offensive_power', 'defensive_power', 'mana_amount', 'mana_control', 'physical_ability', 'luck'] as const).map((statKey) => {
+                    const info = COMBAT_STATS_INFO[statKey];
+                    const rank = character[statKey as keyof Character] as any || '-';
+                    const valueStr = info.values[rank as keyof typeof info.values] || '-';
+                    return (
+                      <div key={statKey} style={{
+                        display: 'flex', flexDirection: 'column', padding: '12px 14px',
+                        border: `1px solid ${accentMid}`, backgroundColor: boxBg, borderRadius: '8px'
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                          <span style={{ fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', color: subtleText }}>{info.label}</span>
+                          <span style={{ fontSize: '20px', fontFamily: fontHeading, fontWeight: 700, color: textColor }}>{rank}</span>
+                        </div>
+                        <div style={{ height: '1px', backgroundColor: accentFaint, marginBottom: '8px' }} />
+                        <div style={{ fontSize: '11px', color: textColor, opacity: 0.9 }}>
+                          {valueStr}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>

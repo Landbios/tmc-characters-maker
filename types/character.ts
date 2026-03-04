@@ -86,6 +86,9 @@ export type Character = {
   // ID Card (Carnet) photo
   id_photo_url?: string;        // separate portrait for the ID card
   id_photo_border?: 'square' | 'circle' | 'hexagon' | 'diamond'; // frame shape
+
+  // Category: student (default) or tutor
+  character_category?: 'student' | 'tutor';
 };
 
 export const DEFAULT_LAYOUT: Section[] = [

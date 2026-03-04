@@ -378,6 +378,20 @@ export default function CharacterEditor() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
             <EditorSection title="Identidad">
+              {/* Category selector — determines tutor vs student */}
+              <div>
+                <label style={S.label}>Categoría del Personaje</label>
+                <select
+                  style={S.select}
+                  value={character.character_category || 'student'}
+                  onChange={e => updateField('character_category', e.target.value)}
+                  onFocus={onFocus}
+                  onBlur={onBlur}
+                >
+                  <option value="student">Estudiante</option>
+                  <option value="tutor">Tutor</option>
+                </select>
+              </div>
               <Field label="Nombre" value={character.name} onChange={v => updateField('name', v)} />
               <Field label="Subtítulo / Título" value={character.subtitle} onChange={v => updateField('subtitle', v)} />
               <Field label="URL Imagen del Personaje" value={character.image_url} onChange={v => updateField('image_url', v)} placeholder="https://..." />
@@ -414,6 +428,8 @@ export default function CharacterEditor() {
               <Field label="Tipo de Blaze" value={character.blaze_type || ''} onChange={v => updateField('blaze_type', v)} />
             </EditorSection>
 
+            {/* Battlefront — hidden for tutors */}
+            {(character.character_category || 'student') !== 'tutor' && (
             <EditorSection title="Frente de Batalla">
               <div>
                 <label style={S.label}>Nombre del Frente</label>
@@ -441,6 +457,7 @@ export default function CharacterEditor() {
                 />
               </div>
             </EditorSection>
+            )}
 
             <EditorSection title="Datos de Combate">
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>

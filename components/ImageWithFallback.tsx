@@ -4,6 +4,24 @@ import React, { useState } from 'react';
 import Image, { ImageProps } from 'next/image';
 import { ImageOff } from 'lucide-react';
 
+/**
+ * Domains that block external hotlinking and need to go through our proxy.
+ * The proxy adds the correct Referer/Origin headers so the CDN accepts the request.
+ */
+const PROXIED_HOSTNAMES = ['pbs.twimg.com', 'ton.twimg.com'];
+
+function maybeProxySrc(src: string): string {
+  try {
+    const url = new URL(src);
+    if (PROXIED_HOSTNAMES.includes(url.hostname)) {
+      return `/api/proxy-image?url=${encodeURIComponent(src)}`;
+    }
+  } catch {
+    // Not a valid URL — fall through
+  }
+  return src;
+}
+
 export default function ImageWithFallback({ 
   src, 
   alt,
@@ -34,11 +52,13 @@ export default function ImageWithFallback({
     );
   }
 
+  const resolvedSrc = typeof src === 'string' ? maybeProxySrc(src) : src;
+
   return (
     <Image
       {...props}
-      key={typeof src === 'string' ? src : undefined}
-      src={src}
+      key={typeof resolvedSrc === 'string' ? resolvedSrc : undefined}
+      src={resolvedSrc}
       alt={alt}
       onError={() => setError(true)}
     />
