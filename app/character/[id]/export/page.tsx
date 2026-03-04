@@ -3,9 +3,9 @@ import { notFound } from 'next/navigation';
 import StudentIdExport from '@/components/StudentIdExport';
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function ExportStudentIdPage({ params }: PageProps) {
