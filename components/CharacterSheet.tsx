@@ -3,7 +3,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { Character, Section, Rank } from '@/types/character';
-import { Zap, Mountain, Shield, Feather, Flame, User, Sword, Scroll, ArrowLeft } from 'lucide-react';
+import { Zap, Mountain, Shield, Feather, Flame, User, Sword, Scroll, ArrowLeft, Download } from 'lucide-react';
 import ImageWithFallback from '@/components/ImageWithFallback';
 import { COMBAT_STATS_INFO } from '@/utils/combatStats';
 import { createClient } from '@/utils/supabase/client';
@@ -209,9 +209,9 @@ export default function CharacterSheet({ character, preview = false }: Character
       className="w-full max-w-4xl mx-auto p-8 md:p-12 min-h-screen flex flex-col items-center relative overflow-hidden transition-colors duration-500"
       style={containerStyle}
     >
-      {/* Back to Dashboard Button (if logged in and on public view) */}
-      {isLoggedIn && !preview && (
-        <div className="fixed top-4 left-4 z-50">
+      {/* Action Buttons */}
+      <div className="fixed top-4 left-4 z-50 flex gap-4">
+        {isLoggedIn && !preview && (
           <Link href="/dashboard">
             <button
               className="bg-black/60 backdrop-blur border border-white/20 text-white rounded-full p-3 shadow-lg hover:border-blue-400 hover:text-blue-400 transition-all"
@@ -220,8 +220,19 @@ export default function CharacterSheet({ character, preview = false }: Character
               <ArrowLeft size={18} />
             </button>
           </Link>
-        </div>
-      )}
+        )}
+        {!preview && (
+          <Link href={`/character/${character.id}/export`}>
+            <button
+              className="bg-black/60 backdrop-blur border border-white/20 text-white rounded-full p-3 flex items-center gap-2 shadow-lg hover:border-blue-400 hover:text-blue-400 transition-all"
+              title="Imprimir carnet de estudiante"
+            >
+              <Download size={18} />
+              <span className="text-sm font-medium pr-2 hidden sm:inline">Imprimir carnet de estudiante</span>
+            </button>
+          </Link>
+        )}
+      </div>
 
       {/* Background Image & Overlay */}
       {character.background_image_url && (

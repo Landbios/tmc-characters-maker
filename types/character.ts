@@ -82,6 +82,10 @@ export type Character = {
   // Blaze image options
   blaze_show_border?: boolean;  // show/hide the border around blaze image
   blaze_image_size?: 'sm' | 'md' | 'lg' | 'full'; // portrait size
+
+  // ID Card (Carnet) photo
+  id_photo_url?: string;        // separate portrait for the ID card
+  id_photo_border?: 'square' | 'circle' | 'hexagon' | 'diamond'; // frame shape
 };
 
 export const DEFAULT_LAYOUT: Section[] = [
@@ -145,4 +149,6 @@ export const DEFAULT_CHARACTER: Character = {
   card_bg_opacity: 0.4,
   blaze_show_border: true,
   blaze_image_size: 'md',
+  id_photo_url: '',
+  id_photo_border: 'square',
 };

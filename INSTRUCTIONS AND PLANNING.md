@@ -51,6 +51,7 @@ the overall look and feel of the app should be of a sci-fi academy.
 ```
 #### 2.2 Out of scope (can be added later)
 
+
 ● Desktop integration with electron
 ● Mobile app integration with react native
 ● Integration with discord bot like tupperbox

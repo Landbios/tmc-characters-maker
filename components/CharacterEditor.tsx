@@ -704,6 +704,64 @@ export default function CharacterEditor() {
               </div>
             </EditorSection>
 
+            {/* ── ID Card Photo ─────────────────────────── */}
+            <EditorSection title="Foto de Identificación (Carnet)">
+              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                Imagen que aparecerá en el carnet estudiantil. Si no se especifica, se usa la imagen principal del personaje.
+              </p>
+              <Field
+                label="URL Foto del Carnet"
+                value={character.id_photo_url || ''}
+                onChange={v => updateField('id_photo_url', v)}
+                placeholder="https://... (opcional)"
+              />
+              {/* Preview thumbnail */}
+              {(character.id_photo_url || character.image_url) && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.25rem' }}>
+                  <div style={{
+                    width: '52px',
+                    height: '52px',
+                    flexShrink: 0,
+                    overflow: 'hidden',
+                    border: '1px solid var(--border)',
+                    backgroundColor: 'var(--surface-alt)',
+                    borderRadius: character.id_photo_border === 'circle' ? '50%' : '0',
+                    clipPath: character.id_photo_border === 'hexagon'
+                      ? 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
+                      : character.id_photo_border === 'diamond'
+                      ? 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)'
+                      : 'none',
+                    position: 'relative',
+                  }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={character.id_photo_url || character.image_url}
+                      alt="preview"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    />
+                  </div>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', color: 'var(--text-muted)' }}>
+                    Vista previa del recorte
+                  </span>
+                </div>
+              )}
+              <div>
+                <label style={S.label}>Forma del Marco</label>
+                <select
+                  style={S.select}
+                  value={character.id_photo_border || 'square'}
+                  onChange={e => updateField('id_photo_border', e.target.value)}
+                  onFocus={onFocus}
+                  onBlur={onBlur}
+                >
+                  <option value="square">Cuadrado</option>
+                  <option value="circle">Circular</option>
+                  <option value="hexagon">Hexagonal</option>
+                  <option value="diamond">Diamante</option>
+                </select>
+              </div>
+            </EditorSection>
+
           </div>
         )}
 
