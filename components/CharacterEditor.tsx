@@ -229,10 +229,12 @@ export default function CharacterEditor() {
           if (!data.noble_arts) data.noble_arts = [];
           setCharacter(data);
         }
+      } else {
+        reset();
       }
     };
     loadCharacter();
-  }, [id, supabase, setCharacter, router]);
+  }, [id, supabase, setCharacter, router, reset]);
 
   const handleSave = async () => {
     if (!user) {

@@ -116,15 +116,34 @@ export default function DashboardPage() {
   }
 
   const filteredCharacters = characters.filter((c) => {
-    // No mostrar los W.I.P en el dashboard público
-    if (c.status === 'w.i.p') return false;
+    // Reglas de Visibilidad W.I.P
+    if (c.status === 'w.i.p') {
+      const isOwner = c.user_id === currentUser?.id;
+      const isStaffOrSuperadmin = ['staff', 'superadmin'].includes(userRole);
+      const isStudentOrTutor = ['student', 'tutor'].includes(c.character_category || 'student');
+
+      if (isStaffOrSuperadmin) {
+        // Staff puede ver todos los WIPs
+      } else if (isOwner && isStudentOrTutor) {
+        // Dueños pueden ver sus propios WIPs de estudiantes y tutores
+      } else {
+        // En cualquier otro caso, ocultar el WIP
+        return false;
+      }
+    }
 
     const t = searchTerm.toLowerCase();
     const textMatch = !searchTerm || [c.name, c.subtitle, c.quote].some(f => f && f.toLowerCase().includes(t));
     
-    if (filterBattlefront === 'SHION_FILTER') {
-      const isTargetFaction = ['Frontier', 'UNION', 'ODI', 'None', null, ''].includes(c.faction ?? null);
-      return textMatch && isTargetFaction && c.status === 'completed';
+    // Filtros Shion (Solo completados)
+    if (filterBattlefront === 'SHION_UNION') {
+      return textMatch && c.faction === 'UNION' && c.status === 'completed';
+    }
+    if (filterBattlefront === 'SHION_FRONTIER') {
+      return textMatch && c.faction === 'Frontier' && c.status === 'completed';
+    }
+    if (filterBattlefront === 'SHION_ODI') {
+      return textMatch && c.faction === 'ODI' && c.status === 'completed';
     }
 
     const bf = c.battlefront_name || c.clan_name;
@@ -438,7 +457,7 @@ export default function DashboardPage() {
                   value={filterBattlefront}
                   onChange={e => {
                     const val = e.target.value;
-                    if (val === 'SHION_FILTER') {
+                    if (val.startsWith('SHION_')) {
                       setIsShionLoading(true);
                       setTimeout(() => setIsShionLoading(false), 2400);
                     }
@@ -450,8 +469,14 @@ export default function DashboardPage() {
                   {Array.from(new Set(characters.map(c => c.battlefront_name || c.clan_name).filter(Boolean))).map(bf => (
                     <option key={bf} value={bf}>{bf}</option>
                   ))}
-                  <option value="SHION_FILTER" style={{ color: '#ef4444', backgroundColor: '#000', fontStyle: 'italic', fontWeight: 'bold' }}>
-                    UNION, ODI, FRONTIER, SIN ASIGNAR :)
+                  <option value="SHION_UNION" style={{ color: '#ef4444', backgroundColor: '#000', fontStyle: 'italic', fontWeight: 'bold' }}>
+                    UNION :)
+                  </option>
+                  <option value="SHION_FRONTIER" style={{ color: '#ef4444', backgroundColor: '#000', fontStyle: 'italic', fontWeight: 'bold' }}>
+                    FRONTIER :)
+                  </option>
+                  <option value="SHION_ODI" style={{ color: '#ef4444', backgroundColor: '#000', fontStyle: 'italic', fontWeight: 'bold' }}>
+                    ODI :)
                   </option>
                 </select>
               </div>
