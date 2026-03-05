@@ -39,6 +39,10 @@ export type Character = {
   battlefront_name: string;
   battlefront_desc: string;
   
+  // Shion DB Fields
+  faction?: 'Frontier' | 'UNION' | 'ODI' | 'None';
+  status?: 'w.i.p' | 'completed';
+  
   // Combat Stats
   offensive_power: Rank;
   defensive_power: Rank;
@@ -88,7 +92,7 @@ export type Character = {
   id_photo_border?: 'square' | 'circle' | 'hexagon' | 'diamond'; // frame shape
 
   // Category: student (default) or tutor
-  character_category?: 'student' | 'tutor';
+  character_category?: 'student' | 'tutor' | 'otros';
 };
 
 export const DEFAULT_LAYOUT: Section[] = [
@@ -114,8 +118,8 @@ export const DEFAULT_CHARACTER: Character = {
   element_advanced: 'Elemento Derivado',
   blaze_type: 'Tipo de Arma/Forma',
 
-  battlefront_name: 'Escuadrón',
-  battlefront_desc: 'Descripción del escuadrón o división asignada.',
+  battlefront_name: 'Akatsuki',
+  battlefront_desc: 'Frente de cazadores ágiles, enfocados en misiones rápidas y letales.',
   
   offensive_power: 'C',
   defensive_power: 'C',
@@ -126,8 +130,8 @@ export const DEFAULT_CHARACTER: Character = {
 
   noble_arts: [],
 
-  clan_name: 'Escuadrón',
-  clan_desc: 'Descripción',
+  clan_name: 'Akatsuki',
+  clan_desc: 'Frente de cazadores rápidos',
   
   quote: '"Una frase inspiradora o lema personal del personaje."',
   theme_color: '#E8C4C4',

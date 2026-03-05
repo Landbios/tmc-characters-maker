@@ -22,6 +22,7 @@ export default function DashboardPage() {
   const [feedbackText, setFeedbackText] = useState('');
   const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
   const [currentUser, setCurrentUser] = useState<{ id: string } | null>(null);
+  const [userRole, setUserRole] = useState<'roleplayer' | 'staff' | 'superadmin'>('roleplayer');
   const supabase = createClient();
   const router = useRouter();
 
@@ -33,6 +34,12 @@ export default function DashboardPage() {
         return;
       }
       setCurrentUser(user as { id: string });
+
+      // Fetch user role
+      const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+      if (profile && profile.role) {
+        setUserRole(profile.role);
+      }
 
       const { data, error } = await supabase
         .from('characters')
@@ -109,6 +116,9 @@ export default function DashboardPage() {
 
   /* ── Derived State ─────────────────────────────────────── */
   const filteredCharacters = characters.filter((c) => {
+    // No mostrar los W.I.P en el dashboard público
+    if (c.status === 'w.i.p') return false;
+
     const t = searchTerm.toLowerCase();
     const textMatch = !searchTerm || [c.name, c.subtitle, c.quote].some(f => f && f.toLowerCase().includes(t));
     const bf = c.battlefront_name || c.clan_name;
@@ -218,6 +228,54 @@ export default function DashboardPage() {
                   Tutores
                 </button>
               </Link>
+              
+              {userRole === 'superadmin' && (
+                <Link href="/admin">
+                  <button
+                    style={{ ...outlineBtnStyle, borderColor: 'var(--danger)', color: 'var(--danger)' }}
+                    onMouseEnter={e => {
+                      (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+                    }}
+                    onMouseLeave={e => {
+                      (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
+                    }}
+                  >
+                    <Shield className="inline mr-2 h-3.5 w-3.5" />
+                    Admin Panel
+                  </button>
+                </Link>
+              )}
+              
+              {['staff', 'superadmin'].includes(userRole) && (
+                <Link href="/shion-db">
+                  <button
+                    style={{
+                      ...outlineBtnStyle,
+                      position: 'relative',
+                      overflow: 'hidden',
+                      color: '#22c55e', // matrix green
+                      borderColor: '#22c55e',
+                    }}
+                    className="group"
+                    onMouseEnter={e => {
+                      (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(34, 197, 94, 0.1)';
+                      (e.currentTarget as HTMLButtonElement).style.textShadow = '0 0 8px rgba(34, 197, 94, 0.8)';
+                    }}
+                    onMouseLeave={e => {
+                      (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
+                      (e.currentTarget as HTMLButtonElement).style.textShadow = 'none';
+                    }}
+                  >
+                    {/* Glitch effect layer */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 mix-blend-screen pointer-events-none transition-opacity duration-75 text-[0.5rem] leading-[0.5rem] break-all overflow-hidden text-green-500 font-mono tracking-tighter" style={{ zIndex: 0 }}>
+                      01010110100101001011000100110101100100
+                    </div>
+                    <Eye className="inline mr-2 h-3.5 w-3.5 relative z-10" />
+                    <span className="relative z-10 uppercase font-black" style={{ letterSpacing: '0.2em' }}>Shion DB</span>
+                  </button>
+                </Link>
+              )}
+
               {/* Profile */}
               <Link href="/profile">
                 <button

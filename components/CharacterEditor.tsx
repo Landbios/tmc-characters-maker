@@ -174,6 +174,7 @@ export default function CharacterEditor() {
   const { character, setCharacter, updateField, reset } = useCharacterStore();
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState<Record<string, unknown> | null>(null);
+  const [userRole, setUserRole] = useState<'roleplayer' | 'staff' | 'superadmin'>('roleplayer');
   const [activeTab, setActiveTab] = useState<'content' | 'design' | 'layout'>('content');
   const supabase = createClient();
   const router = useRouter();
@@ -189,6 +190,12 @@ export default function CharacterEditor() {
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user as Record<string, unknown> | null);
+      if (user) {
+        const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+        if (data && data.role) {
+          setUserRole(data.role);
+        }
+      }
     };
     checkUser();
   }, [supabase]);
@@ -200,10 +207,14 @@ export default function CharacterEditor() {
         if (data && !error) {
           // ── Owner guard ───────────────────────────────────
           const { data: { user } } = await supabase.auth.getUser();
-          if (user && data.user_id && data.user_id !== user.id) {
-            toast.error('Acceso denegado — solo puedes editar tus propios personajes.');
-            router.replace(`/character/${id}`);
-            return;
+          if (user) {
+            const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+            const role = profile?.role || 'roleplayer';
+            if (data.user_id && data.user_id !== user.id && !['staff', 'superadmin'].includes(role)) {
+              toast.error('Acceso denegado — solo puedes editar tus propios personajes.');
+              router.replace(`/character/${id}`);
+              return;
+            }
           }
           // ─────────────────────────────────────────────────
           if (!data.layout) {
@@ -232,6 +243,17 @@ export default function CharacterEditor() {
     setSaving(true);
     try {
       const characterData = { ...character, user_id: (user as { id: string }).id };
+      
+      // Strict battlefront check for non-tutors and non-staff
+      if (characterData.character_category !== 'tutor' && !['staff', 'superadmin'].includes(userRole)) {
+        const validFronts = ['Akatsuki', 'Kyomon', 'Rentei', 'Hagun'];
+        const currentFront = characterData.battlefront_name || characterData.clan_name;
+        if (!validFronts.includes(currentFront)) {
+          characterData.battlefront_name = 'Akatsuki';
+          characterData.clan_name = 'Akatsuki';
+        }
+      }
+
       if (characterData.id === 'demo') delete (characterData as Record<string, unknown>).id;
       const { data, error } = await supabase.from('characters').upsert(characterData).select().single();
       if (error) throw error;
@@ -377,6 +399,41 @@ export default function CharacterEditor() {
         {activeTab === 'content' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
+            {['staff', 'superadmin'].includes(userRole) && (
+            <EditorSection title="Opciones de Staff">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                <div>
+                  <label style={S.label}>Facción (Shion DB)</label>
+                  <select
+                    style={S.select}
+                    value={character.faction || 'None'}
+                    onChange={e => updateField('faction', e.target.value)}
+                    onFocus={onFocus}
+                    onBlur={onBlur}
+                  >
+                    <option value="None">Ninguna</option>
+                    <option value="Frontier">Frontier</option>
+                    <option value="UNION">UNION</option>
+                    <option value="ODI">ODI</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={S.label}>Estado del Archivo</label>
+                  <select
+                    style={S.select}
+                    value={character.status || 'w.i.p'}
+                    onChange={e => updateField('status', e.target.value)}
+                    onFocus={onFocus}
+                    onBlur={onBlur}
+                  >
+                    <option value="w.i.p">W.I.P (En desarrollo)</option>
+                    <option value="completed">Completado</option>
+                  </select>
+                </div>
+              </div>
+            </EditorSection>
+            )}
+
             <EditorSection title="Identidad">
               {/* Category selector — determines tutor vs student */}
               <div>
@@ -390,6 +447,9 @@ export default function CharacterEditor() {
                 >
                   <option value="student">Estudiante</option>
                   <option value="tutor">Tutor</option>
+                  {(['staff', 'superadmin'].includes(userRole) || character.character_category === 'otros') && (
+                    <option value="otros">Otros</option>
+                  )}
                 </select>
               </div>
               <Field label="Nombre" value={character.name} onChange={v => updateField('name', v)} />

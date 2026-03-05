@@ -67,7 +67,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
       ${inter.variable} ${lato.variable} ${montserrat.variable} ${roboto.variable}
       ${pinyon.variable}
     `}>
-      <body suppressHydrationWarning style={{ backgroundColor: 'var(--bg)', color: 'var(--text)' }} className="antialiased">
+      <body suppressHydrationWarning style={{ backgroundColor: 'var(--bg)', color: 'var(--text)' }} className="antialiased pb-20 standalone:pb-24">
         {children}
         <BottomNav />
         <ServiceWorkerRegistration />
