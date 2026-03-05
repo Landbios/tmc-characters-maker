@@ -244,8 +244,19 @@ export default function CharacterEditor() {
     try {
       const characterData = { ...character, user_id: (user as { id: string }).id };
       
+      // Default new or undefined characters to W.I.P
+      characterData.status = characterData.status || 'w.i.p';
+
       // Strict battlefront check for non-tutors and non-staff
-      if (characterData.character_category !== 'tutor' && !['staff', 'superadmin'].includes(userRole)) {
+      const isNoFrontCategory = ['tutor', 'otros'].includes(characterData.character_category || 'student');
+      
+      if (isNoFrontCategory) {
+        // Automatically erase front data if they are no-front categories
+        characterData.battlefront_name = '';
+        characterData.clan_name = '';
+        characterData.battlefront_desc = '';
+        characterData.clan_desc = '';
+      } else if (!['staff', 'superadmin'].includes(userRole)) {
         const validFronts = ['Akatsuki', 'Kyomon', 'Rentei', 'Hagun'];
         const currentFront = characterData.battlefront_name || characterData.clan_name;
         if (!validFronts.includes(currentFront)) {
@@ -488,8 +499,8 @@ export default function CharacterEditor() {
               <Field label="Tipo de Blaze" value={character.blaze_type || ''} onChange={v => updateField('blaze_type', v)} />
             </EditorSection>
 
-            {/* Battlefront — hidden for tutors */}
-            {(character.character_category || 'student') !== 'tutor' && (
+            {/* Battlefront — hidden for tutors and otros */}
+            {!['tutor', 'otros'].includes(character.character_category || 'student') && (
             <EditorSection title="Frente de Batalla">
               <div>
                 <label style={S.label}>Nombre del Frente</label>

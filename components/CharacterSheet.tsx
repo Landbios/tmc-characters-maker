@@ -102,6 +102,7 @@ export default function CharacterSheet({ character, preview = false }: Character
 
       case 'battlefront':
       case 'clan':
+        if (['tutor', 'otros'].includes(character.character_category || 'student')) return null;
         return (
           <div key={section.id} className="w-full max-w-2xl">
             <div className="rounded-xl p-6 flex flex-col items-center text-center transition-colors duration-300 border border-white/30"

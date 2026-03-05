@@ -5,13 +5,16 @@ import { useEffect, useState } from 'react';
 import { Character } from '@/types/character';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Terminal, ShieldAlert, ChevronLeft, Eye, Edit, Scan } from 'lucide-react';
+import { Terminal, ShieldAlert, ChevronLeft, ChevronRight, Eye, Edit, Scan } from 'lucide-react';
 import Link from 'next/link';
+
+const ITEMS_PER_PAGE = 6;
 
 export default function ShionDBPage() {
   const [characters, setCharacters] = useState<Character[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterFaction, setFilterFaction] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
   const supabase = createClient();
   const router = useRouter();
 
@@ -53,6 +56,9 @@ export default function ShionDBPage() {
       ? characters.filter(c => c.character_category === filterFaction || (!c.character_category && filterFaction === 'student'))
       : characters.filter(c => c.faction === filterFaction)
     : characters;
+
+  const totalPages = Math.ceil(filteredCharacters.length / ITEMS_PER_PAGE);
+  const paginatedCharacters = filteredCharacters.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   if (loading) {
     return (
@@ -96,7 +102,7 @@ export default function ShionDBPage() {
             <span className="opacity-50">Filter Node:</span>
             <select
               value={filterFaction}
-              onChange={e => setFilterFaction(e.target.value)}
+              onChange={e => { setFilterFaction(e.target.value); setCurrentPage(1); }}
               className="bg-black border border-green-500/50 text-green-400 py-1.5 px-3 outline-none focus:border-green-400 transition-colors uppercase tracking-widest cursor-pointer"
             >
               <optgroup label="FACTIONS">
@@ -119,7 +125,7 @@ export default function ShionDBPage() {
 
         {/* Database List */}
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {filteredCharacters.map(char => (
+          {paginatedCharacters.map(char => (
             <div 
               key={char.id} 
               className="border border-green-500/30 bg-black/60 p-4 relative group hover:border-green-400 transition-colors overflow-hidden"
@@ -178,6 +184,33 @@ export default function ShionDBPage() {
             </div>
           ))}
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex justify-center mt-10">
+            <div className="inline-flex items-center gap-4 border border-green-500/30 bg-black/60 px-6 py-2">
+              <button
+                className={`text-green-500/60 transition-colors p-1 ${currentPage === 1 ? 'opacity-30 cursor-not-allowed' : 'hover:text-green-400'}`}
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft size={18} />
+              </button>
+              
+              <span className="text-xs tracking-[0.2em] text-green-500/80">
+                {currentPage} / {totalPages}
+              </span>
+
+              <button
+                className={`text-green-500/60 transition-colors p-1 ${currentPage === totalPages ? 'opacity-30 cursor-not-allowed' : 'hover:text-green-400'}`}
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+              >
+                <ChevronRight size={18} />
+              </button>
+            </div>
+          </div>
+        )}
 
       </div>
 
