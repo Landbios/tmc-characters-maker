@@ -18,6 +18,7 @@ export default function DashboardPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterBattlefront, setFilterBattlefront] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [isShionLoading, setIsShionLoading] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [feedbackText, setFeedbackText] = useState('');
   const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
@@ -38,7 +39,7 @@ export default function DashboardPage() {
       // Fetch user role
       const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
       if (profile && profile.role) {
-        setUserRole(profile.role);
+        setUserRole(profile.role.trim().toLowerCase() as 'roleplayer' | 'staff' | 'superadmin');
       }
 
       const { data, error } = await supabase
@@ -114,13 +115,18 @@ export default function DashboardPage() {
     );
   }
 
-  /* ── Derived State ─────────────────────────────────────── */
   const filteredCharacters = characters.filter((c) => {
     // No mostrar los W.I.P en el dashboard público
     if (c.status === 'w.i.p') return false;
 
     const t = searchTerm.toLowerCase();
     const textMatch = !searchTerm || [c.name, c.subtitle, c.quote].some(f => f && f.toLowerCase().includes(t));
+    
+    if (filterBattlefront === 'SHION_FILTER') {
+      const isTargetFaction = ['Frontier', 'UNION', 'ODI', 'None', null, ''].includes(c.faction ?? null);
+      return textMatch && isTargetFaction && c.status === 'completed';
+    }
+
     const bf = c.battlefront_name || c.clan_name;
     const filterMatch = !filterBattlefront || bf === filterBattlefront;
     return textMatch && filterMatch;
@@ -246,7 +252,7 @@ export default function DashboardPage() {
                 </Link>
               )}
               
-              {['staff', 'superadmin'].includes(userRole) && (
+              {(userRole === 'staff' || userRole === 'superadmin') && (
                 <Link href="/shion-db">
                   <button
                     style={{
@@ -430,16 +436,39 @@ export default function DashboardPage() {
                   onFocus={e => (e.currentTarget.style.borderColor = 'var(--glow)')}
                   onBlur={e => (e.currentTarget.style.borderColor = 'var(--border-light)')}
                   value={filterBattlefront}
-                  onChange={e => { setFilterBattlefront(e.target.value); setCurrentPage(1); }}
+                  onChange={e => {
+                    const val = e.target.value;
+                    if (val === 'SHION_FILTER') {
+                      setIsShionLoading(true);
+                      setTimeout(() => setIsShionLoading(false), 2400);
+                    }
+                    setFilterBattlefront(val);
+                    setCurrentPage(1);
+                  }}
                 >
                   <option value="">Todos los Frentes</option>
                   {Array.from(new Set(characters.map(c => c.battlefront_name || c.clan_name).filter(Boolean))).map(bf => (
                     <option key={bf} value={bf}>{bf}</option>
                   ))}
+                  <option value="SHION_FILTER" style={{ color: '#ef4444', backgroundColor: '#000', fontStyle: 'italic', fontWeight: 'bold' }}>
+                    UNION, ODI, FRONTIER, SIN ASIGNAR :)
+                  </option>
                 </select>
               </div>
             </div>
 
+            {/* ── Shion Loading State ──────────────────────── */}
+            {isShionLoading ? (
+              <div className="flex flex-col items-center justify-center py-24 space-y-6">
+                 <div className="text-red-500 text-xl md:text-3xl font-black tracking-[0.3em] uppercase glitch-text" data-text="我々の目は恐ろしい真実を探求する">
+                   我々の目は恐ろしい真実を探求する
+                 </div>
+                 <div className="text-red-500/70 text-[0.65rem] tracking-[0.4em] uppercase font-mono animate-pulse border border-red-500/30 px-4 py-2 bg-red-950/20">
+                   Nuestros ojos exploran la horrible verdad...
+                 </div>
+              </div>
+            ) : (
+            <>
             {/* ── Character Grid ──────────────────────── */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {paginatedCharacters.map((char) => (
@@ -659,6 +688,9 @@ export default function DashboardPage() {
               </div>
             )}
 
+            </>
+            )}
+
           </div>
         )}
       </div>
@@ -757,6 +789,49 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+
+      <style jsx global>{`
+        .glitch-text {
+          position: relative;
+        }
+        .glitch-text::before, .glitch-text::after {
+          content: attr(data-text);
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          opacity: 0.8;
+        }
+        .glitch-text::before {
+          left: 2px;
+          text-shadow: -1px 0 red;
+          clip: rect(24px, 550px, 90px, 0);
+          animation: glitch-anim-2 3s infinite linear alternate-reverse;
+        }
+        .glitch-text::after {
+          left: -2px;
+          text-shadow: -1px 0 blue;
+          clip: rect(85px, 550px, 140px, 0);
+          animation: glitch-anim 2.5s infinite linear alternate-reverse;
+        }
+        @keyframes glitch-anim {
+          0% { clip: rect(10px, 9999px, 86px, 0); }
+          20% { clip: rect(54px, 9999px, 12px, 0); }
+          40% { clip: rect(98px, 9999px, 89px, 0); }
+          60% { clip: rect(65px, 9999px, 4px, 0); }
+          80% { clip: rect(32px, 9999px, 83px, 0); }
+          100% { clip: rect(2px, 9999px, 45px, 0); }
+        }
+        @keyframes glitch-anim-2 {
+          0% { clip: rect(65px, 9999px, 100px, 0); }
+          20% { clip: rect(3px, 9999px, 42px, 0); }
+          40% { clip: rect(89px, 9999px, 56px, 0); }
+          60% { clip: rect(12px, 9999px, 94px, 0); }
+          80% { clip: rect(44px, 9999px, 20px, 0); }
+          100% { clip: rect(78px, 9999px, 63px, 0); }
+        }
+      `}</style>
     </div>
   );
 }
