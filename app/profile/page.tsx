@@ -15,6 +15,7 @@ import {
   exportCharactersToJSON,
   exportCharactersToTupperbox,
 } from '@/utils/characterIO';
+import { censorEmail } from '@/utils/format';
 
 interface AuthUser {
   id: string;
@@ -24,8 +25,17 @@ interface AuthUser {
 
 export default function ProfilePage() {
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [profile, setProfile] = useState<{ id: string; email?: string; role?: string; username?: string; } | null>(null);
   const [characters, setCharacters] = useState<Character[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Form states
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+  const [usernameInput, setUsernameInput] = useState('');
+  
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+  const [passwordInput, setPasswordInput] = useState('');
+  const [confirmPasswordInput, setConfirmPasswordInput] = useState('');
 
   // ── Selection state ──────────────────────────────────────────
   const [selectionMode, setSelectionMode] = useState(false);
@@ -41,6 +51,22 @@ export default function ProfilePage() {
       if (!authUser) { router.push('/login'); return; }
       setUser(authUser as AuthUser);
 
+      // Fetch profile data
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', authUser.id)
+        .single();
+      
+      if (profileData) {
+        setProfile(profileData);
+        if (profileData.username) {
+          setUsernameInput(profileData.username);
+        } else if (authUser.email) {
+          setUsernameInput(authUser.email);
+        }
+      }
+
       const { data, error } = await supabase
         .from('characters')
         .select('*')
@@ -53,6 +79,54 @@ export default function ProfilePage() {
     };
     init();
   }, [supabase, router]);
+
+  const handleUpdateUsername = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !usernameInput.trim()) return;
+    
+    setIsUpdatingProfile(true);
+    const { error } = await supabase
+      .from('profiles')
+      .update({ username: usernameInput.trim() })
+      .eq('id', user.id);
+      
+    setIsUpdatingProfile(false);
+    
+    if (error) {
+      toast.error('Error al actualizar nombre de usuario');
+    } else {
+      toast.success('Nombre de usuario actualizado con éxito');
+      setProfile(prev => prev ? { ...prev, username: usernameInput.trim() } : null);
+    }
+  };
+
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!passwordInput || passwordInput !== confirmPasswordInput) {
+      toast.error('Las contraseñas no coinciden o están vacías');
+      return;
+    }
+    
+    if (passwordInput.length < 6) {
+      toast.error('La contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+    
+    setIsUpdatingPassword(true);
+    const { error } = await supabase.auth.updateUser({
+      password: passwordInput
+    });
+    
+    setIsUpdatingPassword(false);
+    
+    if (error) {
+      toast.error('Error al actualizar contraseña: ' + error.message);
+    } else {
+      toast.success('Contraseña actualizada con éxito');
+      setPasswordInput('');
+      setConfirmPasswordInput('');
+    }
+  };
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -265,11 +339,71 @@ export default function ProfilePage() {
           </div>
           <div className="flex flex-col gap-2">
             <p className="mono-label" style={{ color: 'var(--glow)' }}>◈ CUENTA DE CADETE</p>
-            <p style={{ fontFamily: 'var(--font-cinzel)', fontSize: '1.2rem', letterSpacing: '0.06em', color: 'var(--text)' }}>{user?.email || '—'}</p>
+            <p style={{ fontFamily: 'var(--font-cinzel)', fontSize: '1.2rem', letterSpacing: '0.06em', color: 'var(--text)' }}>{profile?.username || censorEmail(user?.email)}</p>
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--text-muted)', letterSpacing: '0.1em' }}>CORREO: {censorEmail(user?.email)}</p>
             <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--text-muted)', letterSpacing: '0.1em' }}>MIEMBRO DESDE: {memberSince}</p>
             <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--text-muted)', letterSpacing: '0.1em' }}>
               {characters.length} PERSONAJE{characters.length !== 1 ? 'S' : ''} CREADO{characters.length !== 1 ? 'S' : ''}
             </p>
+          </div>
+        </div>
+
+        {/* ── Account Settings ── */}
+        <div style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', boxShadow: '0 0 16px rgba(59,130,246,0.08)' }}
+          className="p-6 mb-10"
+        >
+          <p className="mono-label mb-6" style={{ color: 'var(--glow)' }}>◈ AJUSTES DE CUENTA</p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Username Update */}
+            <form onSubmit={handleUpdateUsername} className="flex flex-col gap-3">
+              <label style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--text)', letterSpacing: '0.1em' }}>CAMBIAR RECONOCIMIENTO (NOMBRE DE USUARIO)</label>
+              <input
+                type="text"
+                value={usernameInput}
+                onChange={(e) => setUsernameInput(e.target.value)}
+                placeholder="Nuevo nombre de usuario"
+                style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text)', padding: '0.5rem 0.8rem', outline: 'none', fontFamily: 'var(--font-mono)', fontSize: '0.8rem' }}
+                required
+              />
+              <button
+                type="submit"
+                disabled={isUpdatingProfile}
+                style={{ ...accentBtn, alignSelf: 'flex-start', opacity: isUpdatingProfile ? 0.7 : 1 }}
+              >
+                {isUpdatingProfile ? 'ACTUALIZANDO...' : 'ACTUALIZAR PERFIL'}
+              </button>
+            </form>
+
+            {/* Password Update */}
+            <form onSubmit={handleUpdatePassword} className="flex flex-col gap-3">
+              <label style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--text)', letterSpacing: '0.1em' }}>ACTUALIZAR CÓDIGO DE ACCESO (CONTRASEÑA)</label>
+              <input
+                type="password"
+                value={passwordInput}
+                onChange={(e) => setPasswordInput(e.target.value)}
+                placeholder="Nueva contraseña (min. 6 caracteres)"
+                style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text)', padding: '0.5rem 0.8rem', outline: 'none', fontFamily: 'var(--font-mono)', fontSize: '0.8rem' }}
+                minLength={6}
+                required
+              />
+              <input
+                type="password"
+                value={confirmPasswordInput}
+                onChange={(e) => setConfirmPasswordInput(e.target.value)}
+                placeholder="Confirmar nueva contraseña"
+                style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text)', padding: '0.5rem 0.8rem', outline: 'none', fontFamily: 'var(--font-mono)', fontSize: '0.8rem' }}
+                minLength={6}
+                required
+              />
+              <button
+                type="submit"
+                disabled={isUpdatingPassword}
+                style={{ ...accentBtn, alignSelf: 'flex-start', opacity: isUpdatingPassword ? 0.7 : 1 }}
+              >
+                {isUpdatingPassword ? 'ACTUALIZANDO...' : 'CAMBIAR CÓDIGO'}
+              </button>
+            </form>
           </div>
         </div>
 

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Shield, ChevronLeft, UserCog } from 'lucide-react';
 import Link from 'next/link';
+import { censorEmail } from '@/utils/format';
 
 interface Profile {
   id: string;
@@ -121,7 +122,7 @@ export default function AdminPage() {
                         profile.role === 'superadmin' ? 'text-red-500' :
                         profile.role === 'staff' ? 'text-green-500' : 'text-blue-500'
                       } />
-                      {profile.email}
+                      {censorEmail(profile.email)}
                     </td>
                     <td className="px-6 py-4 text-slate-500 font-mono text-xs">
                       {profile.id.substring(0, 8)}...
