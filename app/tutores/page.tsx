@@ -114,20 +114,9 @@ export default async function TutoresPage() {
                 key={tutor.id}
                 style={{
                   backgroundColor: 'var(--surface)',
-                  border: '1px solid var(--border)',
                   transition: 'box-shadow 0.25s, transform 0.25s, border-color 0.25s',
                 }}
-                className="overflow-hidden group cursor-default"
-                onMouseEnter={(e) => {
-                  const el = e.currentTarget as HTMLDivElement;
-                  el.style.borderColor = '#0353a4';
-                  el.style.transform = 'translateY(-2px)';
-                }}
-                onMouseLeave={(e) => {
-                  const el = e.currentTarget as HTMLDivElement;
-                  el.style.borderColor = 'var(--border)';
-                  el.style.transform = 'translateY(0)';
-                }}
+                className="border border-[var(--border)] overflow-hidden group cursor-default hover:-translate-y-1 hover:border-[#0353a4]"
               >
                 {/* Card image */}
                 <div className="relative h-48 w-full">
@@ -199,22 +188,14 @@ export default async function TutoresPage() {
                       title="Ver personaje"
                       style={{
                         backgroundColor: 'transparent',
-                        border: '1px solid transparent',
-                        color: 'var(--text-muted)',
                         padding: '0.35rem',
                         cursor: 'pointer',
                         display: 'inline-flex',
                         alignItems: 'center',
                         justifyContent: 'center',
+                        transition: 'color 0.2s, border-color 0.2s'
                       }}
-                      onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLButtonElement).style.color = 'var(--glow)';
-                        (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)';
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)';
-                        (e.currentTarget as HTMLButtonElement).style.borderColor = 'transparent';
-                      }}
+                      className="border border-transparent text-[var(--text-muted)] hover:text-[var(--glow)] hover:border-[var(--border)]"
                     >
                       <Eye size={15} />
                     </button>
