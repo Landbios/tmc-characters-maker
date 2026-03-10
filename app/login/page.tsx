@@ -1,6 +1,7 @@
 'use client';
 
 import { createClient } from '@/utils/supabase/client';
+import { getAuthRedirectUrl } from '@/utils/url';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -35,7 +36,7 @@ function LoginForm() {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
+            emailRedirectTo: getAuthRedirectUrl('/auth/callback'),
             data: { username: username || email.split('@')[0] },
           },
         });
@@ -264,9 +265,74 @@ function LoginForm() {
             </form>
           )}
 
+          {/* External Providers */}
+          {!emailSent && (
+            <div className="mt-6 space-y-4">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', opacity: 0.6 }}>
+                <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border)' }}></div>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--text-muted)', letterSpacing: '0.1em' }}>O ACCESO EXTERNO</span>
+                <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border)' }}></div>
+              </div>
+
+              <button
+                type="button"
+                disabled={loading}
+                onClick={async () => {
+                  try {
+                    setLoading(true);
+                    const { error } = await supabase.auth.signInWithOAuth({
+                      provider: 'discord',
+                      options: {
+                        redirectTo: getAuthRedirectUrl('/auth/callback'),
+                      },
+                    });
+                    if (error) throw error;
+                  } catch (e: unknown) {
+                    toast.error(e instanceof Error ? e.message : 'Error iniciando sesión con Discord');
+                    setLoading(false);
+                  }
+                }}
+                style={{
+                  width: '100%',
+                  backgroundColor: 'transparent',
+                  color: 'var(--text)',
+                  border: '1px solid rgba(88, 101, 242, 0.5)',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.75rem',
+                  letterSpacing: '0.1em',
+                  padding: '0.7rem',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.6rem',
+                  transition: 'all 0.2s ease',
+                  opacity: loading ? 0.5 : 1,
+                }}
+                onMouseEnter={e => {
+                  if (!loading) {
+                    (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(88, 101, 242, 0.1)';
+                    (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(88, 101, 242, 0.8)';
+                    (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 0 12px rgba(88, 101, 242, 0.2)';
+                  }
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
+                  (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(88, 101, 242, 0.5)';
+                  (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
+                }}
+              >
+                <svg width="18" height="18" viewBox="0 0 127.14 96.36">
+                  <path fill="#5865F2" d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a67.55,67.55,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.31,60,73.31,53s5-12.74,11.43-12.74S96.16,46,96.06,53,91.08,65.69,84.69,65.69Z"/>
+                </svg>
+                Continuar con Discord
+              </button>
+            </div>
+          )}
+
           {/* Toggle sign-in / sign-up */}
           {!emailSent && (
-            <div className="mt-6 text-center">
+            <div className="mt-8 text-center">
               <div className="rule-glow mb-5" />
               <button
                 onClick={() => { setIsSignUp(!isSignUp); setEmail(''); setPassword(''); setUsername(''); }}
