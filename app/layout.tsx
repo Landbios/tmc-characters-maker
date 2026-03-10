@@ -14,6 +14,7 @@ import './globals.css';
 import { Toaster } from 'sonner';
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
 import BottomNav from '@/components/BottomNav';
+import AuthProvider from '@/components/AuthProvider';
 
 export const viewport = {
   themeColor: '#0353a4',
@@ -68,10 +69,12 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
       ${pinyon.variable}
     `}>
       <body suppressHydrationWarning style={{ backgroundColor: 'var(--bg)', color: 'var(--text)' }} className="antialiased pb-20 standalone:pb-24">
-        {children}
-        <BottomNav />
-        <ServiceWorkerRegistration />
-        <Toaster position="top-center" richColors />
+        <AuthProvider>
+          {children}
+          <BottomNav />
+          <ServiceWorkerRegistration />
+          <Toaster position="top-center" richColors />
+        </AuthProvider>
       </body>
     </html>
   );
