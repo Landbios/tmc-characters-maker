@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useCharacterStore } from '@/store/character-store';
 import Link from 'next/link';
+import ImageUploader from './ImageUploader';
 
 const FONTS_HEADING = [
   { name: 'Cormorant Garamond', value: 'var(--font-cormorant)' },
@@ -467,7 +468,7 @@ export default function CharacterEditor() {
               </div>
               <Field label="Nombre" value={character.name} onChange={v => updateField('name', v)} />
               <Field label="Subtítulo / Título" value={character.subtitle} onChange={v => updateField('subtitle', v)} />
-              <Field label="URL Imagen del Personaje" value={character.image_url} onChange={v => updateField('image_url', v)} placeholder="https://..." />
+              <ImageUploader label="Imagen del Personaje" value={character.image_url} onChange={v => updateField('image_url', v)} maxSizeMB={5} />
               <div>
                 <label style={S.label}>Ajuste de Imagen</label>
                 <select
@@ -492,7 +493,7 @@ export default function CharacterEditor() {
             </EditorSection>
 
             <EditorSection title="Blaze & Elementos">
-              <Field label="URL Imagen del Blaze" value={character.blaze_image_url || ''} onChange={v => updateField('blaze_image_url', v)} placeholder="https://..." />
+              <ImageUploader label="Imagen del Blaze" value={character.blaze_image_url || ''} onChange={v => updateField('blaze_image_url', v)} maxSizeMB={5} />
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                 <Field label="Elemento Usuario" value={character.element_user || ''} onChange={v => updateField('element_user', v)} />
                 <Field label="Elemento Blaze" value={character.element_blaze || ''} onChange={v => updateField('element_blaze', v)} />
@@ -677,7 +678,7 @@ export default function CharacterEditor() {
                 </div>
               </div>
 
-              <Field label="URL Imagen de Fondo" value={character.background_image_url || ''} onChange={v => updateField('background_image_url', v)} placeholder="https://..." />
+              <ImageUploader label="Imagen de Fondo" value={character.background_image_url || ''} onChange={v => updateField('background_image_url', v)} maxSizeMB={5} />
 
               {character.background_image_url && (
                 <div>
