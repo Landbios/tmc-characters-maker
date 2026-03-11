@@ -800,10 +800,11 @@ export default function CharacterEditor() {
               <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
                 Imagen que aparecerá en el carnet estudiantil. Si no se especifica, se usa la imagen principal del personaje.
               </p>
-              <Field
-                label="URL Foto del Carnet"
+              <ImageUploader
+                label="Foto del Carnet"
                 value={character.id_photo_url || ''}
                 onChange={v => updateField('id_photo_url', v)}
+                maxSizeMB={5}
                 placeholder="https://... (opcional)"
               />
               {/* Preview thumbnail */}
@@ -1059,13 +1060,12 @@ function SortableSectionRow({ section, onRemove, onUpdate }: { section: Section;
             </>
           )}
           {(section.type === 'custom_image' || section.type === 'separator') && (
-            <input
-              style={S.input}
-              placeholder="Image URL"
+            <ImageUploader
+              label="URL o Archivo de Imagen"
               value={section.imageUrl || ''}
-              onChange={e => onUpdate(section.id, { imageUrl: e.target.value })}
-              onFocus={onFocus}
-              onBlur={onBlur}
+              onChange={v => onUpdate(section.id, { imageUrl: v })}
+              maxSizeMB={5}
+              placeholder="https://..."
             />
           )}
         </div>
