@@ -1,8 +1,10 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LayoutGrid, User, Plus, Shield } from 'lucide-react';
+import { createClient } from '@/utils/supabase/client';
 
 /**
  * Bottom navigation bar — only visible when the app is installed as a PWA
@@ -12,6 +14,24 @@ import { LayoutGrid, User, Plus, Shield } from 'lucide-react';
  */
 export default function BottomNav() {
   const pathname = usePathname();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isChecking, setIsChecking] = useState(true);
+  const supabase = createClient();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session);
+      setIsChecking(false);
+    };
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [supabase]);
 
   const links = [
     { href: '/dashboard', label: 'Vault', Icon: LayoutGrid },
@@ -19,6 +39,8 @@ export default function BottomNav() {
     { href: '/tutores',   label: 'Tutores', Icon: Shield    },
     { href: '/profile',   label: 'Perfil',  Icon: User      },
   ];
+
+  if (isChecking || !isAuthenticated) return null;
 
   return (
     <nav
