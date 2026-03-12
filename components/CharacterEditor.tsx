@@ -468,7 +468,7 @@ export default function CharacterEditor() {
               </div>
               <Field label="Nombre" value={character.name} onChange={v => updateField('name', v)} />
               <Field label="Subtítulo / Título" value={character.subtitle} onChange={v => updateField('subtitle', v)} />
-              <ImageUploader label="Imagen del Personaje" value={character.image_url} onChange={v => updateField('image_url', v)} maxSizeMB={5} />
+              <ImageUploader label="Imagen del Personaje" value={character.image_url} onChange={v => updateField('image_url', v)} maxSizeMB={5} aspectRatio={16/9} />
               <div>
                 <label style={S.label}>Ajuste de Imagen</label>
                 <select
@@ -493,7 +493,7 @@ export default function CharacterEditor() {
             </EditorSection>
 
             <EditorSection title="Blaze & Elementos">
-              <ImageUploader label="Imagen del Blaze" value={character.blaze_image_url || ''} onChange={v => updateField('blaze_image_url', v)} maxSizeMB={5} />
+              <ImageUploader label="Imagen del Blaze" value={character.blaze_image_url || ''} onChange={v => updateField('blaze_image_url', v)} maxSizeMB={5} aspectRatio={3/4} />
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                 <Field label="Elemento Usuario" value={character.element_user || ''} onChange={v => updateField('element_user', v)} />
                 <Field label="Elemento Blaze" value={character.element_blaze || ''} onChange={v => updateField('element_blaze', v)} />
@@ -806,6 +806,7 @@ export default function CharacterEditor() {
                 onChange={v => updateField('id_photo_url', v)}
                 maxSizeMB={5}
                 placeholder="https://... (opcional)"
+                aspectRatio={1}
               />
               {/* Preview thumbnail */}
               {(character.id_photo_url || character.image_url) && (
@@ -1066,6 +1067,7 @@ function SortableSectionRow({ section, onRemove, onUpdate }: { section: Section;
               onChange={v => onUpdate(section.id, { imageUrl: v })}
               maxSizeMB={5}
               placeholder="https://..."
+              aspectRatio={16/9}
             />
           )}
         </div>
