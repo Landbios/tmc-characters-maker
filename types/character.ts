@@ -93,6 +93,7 @@ export type Character = {
 
   // Category: student (default) or tutor
   character_category?: 'student' | 'tutor' | 'otros';
+  is_npc?: boolean;
 };
 
 export const DEFAULT_LAYOUT: Section[] = [
@@ -158,4 +159,5 @@ export const DEFAULT_CHARACTER: Character = {
   blaze_image_size: 'md',
   id_photo_url: '',
   id_photo_border: 'square',
+  is_npc: false,
 };

@@ -445,6 +445,29 @@ export default function CharacterEditor() {
                   </select>
                 </div>
               </div>
+
+                <div>
+                  <label style={S.label}>¿NPC?</label>
+                  <div style={{ display: 'flex', alignItems: 'center', height: '2.1rem' }}>
+                    <button
+                      role="switch"
+                      aria-checked={character.is_npc || false}
+                      onClick={() => updateField('is_npc', !(character.is_npc || false))}
+                      style={{
+                        width: '2.4rem', height: '1.3rem', borderRadius: '999px', border: 'none', cursor: 'pointer',
+                        backgroundColor: character.is_npc ? '#0353a4' : 'var(--border)',
+                        position: 'relative', transition: 'background-color 0.2s', flexShrink: 0,
+                      }}
+                    >
+                      <span style={{
+                        position: 'absolute', top: '0.15rem',
+                        left: character.is_npc ? 'calc(100% - 1.05rem)' : '0.15rem',
+                        width: '1rem', height: '1rem', borderRadius: '50%', backgroundColor: '#fff',
+                        transition: 'left 0.2s', display: 'block',
+                      }} />
+                    </button>
+                  </div>
+                </div>
             </EditorSection>
             )}
 
