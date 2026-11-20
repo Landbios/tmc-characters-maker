@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **v0.1 MVP** — Core character sheet builder, Supabase auth, public sharing, search/filter/sort/pagination, PDF export, responsive layout (Shipped prior to GSD bootstrap).
-- 🚧 **v1.1 Expansion** — Phases 1–7 (Active).
+- 🚧 **v1.1 Expansion** — Phases 1–8 (Active).
 
 ## Phases (v1.1)
 
@@ -14,6 +14,7 @@
 - [ ] **Phase 5: Discord Bot Integration (Tupperbox-style)** — Tupperbox-style Discord proxying and automatic character creation from Discord.
 - [ ] **Phase 6: Cross-Platform Integration (Electron & React Native)** — Desktop (Electron) and mobile (React Native) integration research and delivery.
 - [x] **Phase 7: Rich Text Section & Storytelling Effects** — Paragraph line breaks, stylized text effects (glitch, crisp, old-communication quotes), and deeper text-section customization for character backstories.
+- [x] **Phase 8: Collapsible Section Groups & Ambient Music Blocks** — Collapsible multi-item section groups (text, images, separators, music) in the Diseño Web tab plus click-to-play YouTube ambient music blocks for storytelling.
 
 ## Phase Details
 
@@ -76,6 +77,16 @@
 2. Text sections support selectable visual styles/effects — including glitched text, crisp/high-contrast text, and old-communication / archival transmission quotes — rendering consistently in the editor, public character viewer (`/character/[id]`), and both light/dark themes.
 3. Extended text customization options persist in Supabase character data and degrade gracefully in PDF/export views.
 
+### Phase 8: Collapsible Section Groups & Ambient Music Blocks
+**Goal:** Add collapsible section groups in the Diseño Web tab so creators can bundle multiple items (text, images, separators, music) without cluttering the editor or sheet, and add a YouTube ambient music block (and/or inline story trigger) that readers can click to play soundtrack music while reading specific parts of a character's story.  
+**Depends on:** Phase 7  
+**Requirements:** LAY-01, LAY-02, MEDIA-01, MEDIA-02  
+**Success Criteria:**
+1. Creators can add a collapsible Section Group in the Diseño Web tab, give it a title/default collapsed state, and add/reorder/edit nested items (rich text, images, separators, music) inside it while keeping the editor sidebar uncluttered.
+2. Section Groups render cleanly as expandable/collapsible accordions on the character sheet viewer (`/character/[id]`) and live preview without breaking drag-and-drop reordering of top-level sections.
+3. Creators can insert a Music Block (accepting standard YouTube watch/short/youtu.be links) with a custom track label/mood, and readers can click to play/pause ambient audio cleanly without unwanted autoplay.
+4. All new group and music section data persists in existing Supabase JSONB `layout` without requiring a DB migration and degrades cleanly in PDF/print exports.
+
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
@@ -87,3 +98,4 @@
 | 5. Discord Bot Integration (Tupperbox-style) | 0/0 | Not started | - |
 | 6. Cross-Platform Integration (Electron & React Native) | 0/0 | Not started | - |
 | 7. Rich Text Section & Storytelling Effects | 2/2 | Complete | 2026-11-19 |
+| 8. Collapsible Section Groups & Ambient Music Blocks | 2/2 | Complete | 2026-11-20 |

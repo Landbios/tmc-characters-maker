@@ -10,10 +10,10 @@ See: [.planning/PROJECT.md](PROJECT.md) (updated 2026-11-19)
 ## Current Position
 
 - **Milestone:** v1.1 Expansion
-- **Phase:** 7 of 7 (Rich Text Section & Storytelling Effects)
+- **Phase:** 8 of 8 (Collapsible Section Groups & Ambient Music Blocks)
 - **Plan:** 2 of 2 (complete)
-- **Status:** Phase 7 complete (`npx tsc --noEmit` & `npm run build` passed)
-- **Progress:** ██░░░░░░░░ 14% (1/7 phases complete)
+- **Status:** Phase 8 complete (`npx tsc --noEmit` & `npm run build` passed)
+- **Progress:** ███░░░░░░░ 25% (2/8 phases complete)
 
 ## Accumulated Decisions
 
@@ -27,7 +27,9 @@ See: [.planning/PROJECT.md](PROJECT.md) (updated 2026-11-19)
 - **2026-11-19:** Initialized v1.1 roadmap with Phases 1–6 via `/gsd-ingest-docs`.
 - **2026-11-19:** Added Phase 7 (`07-rich-text-section-and-effects`: Rich Text Section & Storytelling Effects) via `/gsd-add-phase`.
 - **2026-11-19:** Captured Phase 7 decisions in `phases/07-rich-text-section-and-effects/07-CONTEXT.md` via `/gsd-discuss-phase 7`.
+- **2026-11-20:** Added Phase 8 (`08-collapsible-section-groups-and-music-blocks`: Collapsible Section Groups & Ambient Music Blocks) via `/gsd-add-phase`.
+- **2026-11-20:** Captured Phase 8 decisions in `phases/08-collapsible-section-groups-and-music-blocks/08-CONTEXT.md` via `/gsd-discuss-phase 8`.
 
 ## Next Action
 
-Run `/gsd-plan-phase 7` to create the executable implementation plan for Phase 7 (Rich Text Section & Storytelling Effects).
+Run `/gsd-plan-phase 8` to create the executable implementation plan for Phase 8 (Collapsible Section Groups & Ambient Music Blocks).

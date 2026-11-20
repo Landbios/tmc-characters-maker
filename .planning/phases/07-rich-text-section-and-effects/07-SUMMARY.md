@@ -25,4 +25,4 @@
 - **[components/CharacterSheet.tsx](../../../components/CharacterSheet.tsx):** Wired `case 'custom_text'` to render via `RichTextRenderer` for both live editor preview and public `/character/[id]` pages.
 
 ## Deviations
-None — executed cleanly as planned.
+- **Post-execution enhancement:** Added customizable transmission (`[comm]`) colors — both section-level (`commColor` picker + 5 sci-fi presets in `RichTextSectionEditor`) and per-transmission inline override (`[comm:TÍTULO|#RRGGBB]` or `[comm:#RRGGBB]`).

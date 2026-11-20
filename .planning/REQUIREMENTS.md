@@ -43,6 +43,13 @@
 - [x] **TEXT-02**: Add selectable sci-fi storytelling text effects and block styles, including glitched text, crisp/high-contrast text, and old-communication / transmission-style quotes.
 - [x] **TEXT-03**: Expand text-section customization controls (typography, alignment, spacing, accents/styles) with full persistence in character data, public viewer rendering, and export compatibility.
 
+### Collapsible Section Groups & Ambient Music Blocks
+
+- [x] **LAY-01**: Allow creators in the Diseño Web tab to create collapsible section groups containing multiple nested items (rich text, images, separators, music) to keep the editor sidebar organized.
+- [x] **LAY-02**: Render collapsible section groups as interactive expandable/collapsible containers on the character sheet viewer with configurable default open/closed state.
+- [x] **MEDIA-01**: Add a YouTube Music Block section type that accepts standard YouTube links (`youtube.com/watch?v=...`, `youtu.be/...`, `youtube.com/shorts/...`) and lets readers click to play/pause ambient music for that part of the story.
+- [x] **MEDIA-02**: Ensure YouTube embeds/players validate URLs safely, never autoplay without user interaction, and degrade cleanly to a labeled track reference in print/PDF exports.
+
 ## Traceability
 
 | Requirement | Phase | Status |
@@ -64,8 +71,12 @@
 | TEXT-01 | Phase 7 | Complete |
 | TEXT-02 | Phase 7 | Complete |
 | TEXT-03 | Phase 7 | Complete |
+| LAY-01 | Phase 8 | Complete |
+| LAY-02 | Phase 8 | Complete |
+| MEDIA-01 | Phase 8 | Complete |
+| MEDIA-02 | Phase 8 | Complete |
 
 **Coverage:**
-- v1.1 requirements: 17 total
-- Mapped to phases: 17
+- v1.1 requirements: 21 total
+- Mapped to phases: 21
 - Unmapped: 0
