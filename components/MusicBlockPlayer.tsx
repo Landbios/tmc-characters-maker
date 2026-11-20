@@ -98,7 +98,8 @@ export function MusicBlockPlayer({
                 src={embedUrl}
                 title={displayTitle}
                 className="w-full h-full border-0"
-                allow="autoplay; encrypted-media; picture-in-picture"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
               />
             </div>
@@ -187,26 +188,23 @@ export function MusicBlockPlayer({
         </a>
       </div>
 
-      {/* Hidden iframe mounted ONLY while user actively plays ambient audio */}
+      {/* Compact visible mini-player drawer mounted ONLY while playing.
+          YouTube requires a visible player (>= 200px) and standard youtube.com/embed
+          with strict-origin-when-cross-origin so audio plays reliably without throttling. */}
       {isPlaying && (
-        <div
-          className="rt-music-iframe-wrap"
-          style={{
-            position: 'absolute',
-            width: '1px',
-            height: '1px',
-            overflow: 'hidden',
-            opacity: 0,
-            pointerEvents: 'none',
-          }}
-        >
-          <iframe
-            src={audioEmbedUrl}
-            title={`Audio ambiental: ${displayTitle}`}
-            width={1}
-            height={1}
-            allow="autoplay; encrypted-media"
-          />
+        <div className="rt-music-iframe-wrap mt-3 pt-3 border-t border-current/15 flex flex-col sm:flex-row items-center gap-3">
+          <div className="relative w-full sm:w-[220px] aspect-video rounded-lg overflow-hidden bg-black/80 shrink-0 border border-white/20">
+            <iframe
+              src={audioEmbedUrl}
+              title={`Audio ambiental: ${displayTitle}`}
+              className="w-full h-full border-0"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            />
+          </div>
+          <div className="text-[11px] opacity-65 leading-relaxed">
+            Usa los controles del reproductor para ajustar el volumen o pausar. Si YouTube bloquea la reproducción en tu red, ábrelo con el botón externo.
+          </div>
         </div>
       )}
     </div>

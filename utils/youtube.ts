@@ -72,6 +72,7 @@ export function getYouTubeEmbedUrl(
   const params = new URLSearchParams({
     rel: '0',
     modestbranding: '1',
+    playsinline: '1',
   });
   if (options.autoplay) {
     params.set('autoplay', '1');
@@ -80,7 +81,7 @@ export function getYouTubeEmbedUrl(
     params.set('loop', '1');
     params.set('playlist', videoId);
   }
-  return `https://www.youtube-nocookie.com/embed/${videoId}?${params.toString()}`;
+  return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
 }
 
 export function getYouTubeThumbnailUrl(videoId: string): string {
