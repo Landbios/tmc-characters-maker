@@ -169,11 +169,26 @@ export function parseInline(input: string, depth = 0): RichTextInline[] {
 }
 
 /**
- * Parses a non-comm chunk of text into paragraph and divider blocks.
+ * Parses a non-comm chunk of text into paragraph, spacer, music, and divider blocks.
  */
-function parseProseChunk(chunk: string): RichTextBlock[] {
+function parseProseChunk(
+  chunk: string,
+  options: { hasPrecedingBlock?: boolean; hasFollowingBlock?: boolean } = {}
+): RichTextBlock[] {
+  const { hasPrecedingBlock = false, hasFollowingBlock = false } = options;
+
+  // Strip the single structural newline immediately after `[/comm]` or before `[comm]`
+  // so only actual blank lines count toward paragraph/spacer gaps.
+  let working = chunk;
+  if (hasPrecedingBlock && working.startsWith('\n')) {
+    working = working.slice(1);
+  }
+  if (hasFollowingBlock && working.endsWith('\n')) {
+    working = working.slice(0, -1);
+  }
+
   const blocks: RichTextBlock[] = [];
-  const rawLines = chunk.split('\n');
+  const rawLines = working.split('\n');
   let paragraphBuffer: string[] = [];
   let consecutiveBlankLines = 0;
 
@@ -189,11 +204,17 @@ function parseProseChunk(chunk: string): RichTextBlock[] {
     }
   };
 
-  const flushExtraBlankLines = () => {
-    // 1 blank line (`\n\n`) is the normal paragraph gap; every extra blank line
-    // beyond the first becomes an explicit vertical spacer, just like pressing Enter repeatedly.
-    if (consecutiveBlankLines > 1 && blocks.length > 0) {
-      blocks.push({ type: 'spacer', lines: consecutiveBlankLines - 1 });
+  const flushExtraBlankLines = (allowAtStart = false) => {
+    const canEmit = blocks.length > 0 || (allowAtStart && hasPrecedingBlock);
+    if (!canEmit) {
+      consecutiveBlankLines = 0;
+      return;
+    }
+    // Between two paragraphs, 1 blank line (`\n\n`) is the standard gap;
+    // right after `[/comm]`, every blank line adds visible separation beyond the default margin.
+    const threshold = allowAtStart && blocks.length === 0 && hasPrecedingBlock ? 0 : 1;
+    if (consecutiveBlankLines > threshold) {
+      blocks.push({ type: 'spacer', lines: consecutiveBlankLines - threshold });
     }
     consecutiveBlankLines = 0;
   };
@@ -207,7 +228,7 @@ function parseProseChunk(chunk: string): RichTextBlock[] {
       continue;
     }
 
-    flushExtraBlankLines();
+    flushExtraBlankLines(true);
 
     if (trimmed.toLowerCase() === '[hr]' || /^-{3,}$/.test(trimmed)) {
       flushParagraph();
@@ -234,15 +255,22 @@ function parseProseChunk(chunk: string): RichTextBlock[] {
   }
 
   flushParagraph();
+
+  // Preserve extra blank lines immediately preceding a `[comm]` block
+  if (hasFollowingBlock && consecutiveBlankLines > 0 && (blocks.length > 0 || hasPrecedingBlock)) {
+    blocks.push({ type: 'spacer', lines: consecutiveBlankLines });
+  }
+
   return blocks;
 }
 
 /**
  * Deterministic rich-text parser for character sheet `custom_text` sections.
  * Supports:
- * - Multi-paragraph splitting on blank lines & preserved single line breaks
+ * - Multi-paragraph splitting on blank lines & preserved single/multi line breaks
  * - Story dividers (`[hr]` or `---`)
- * - Old communication / transmission quote blocks (`[comm]...[/comm]` or `[comm:HEADER]...[/comm]`)
+ * - Old communication / transmission quote blocks (`[comm]...[/comm]` or `[comm:HEADER|#HEX]...[/comm]`)
+ * - Inline ambient music triggers (`[music:TITLE|URL]`)
  * - Inline formatting (`[b]`, `[i]`, `[u]`, `[s]`, `[glitch]`, `[crisp]`, `[redacted]`)
  */
 export function parseRichText(raw: string): RichTextBlock[] {
@@ -257,7 +285,12 @@ export function parseRichText(raw: string): RichTextBlock[] {
 
   while ((match = commRegex.exec(normalized)) !== null) {
     if (match.index > lastIndex) {
-      blocks.push(...parseProseChunk(normalized.slice(lastIndex, match.index)));
+      blocks.push(
+        ...parseProseChunk(normalized.slice(lastIndex, match.index), {
+          hasPrecedingBlock: blocks.length > 0,
+          hasFollowingBlock: true,
+        })
+      );
     }
 
     const { header, color } = parseCommMeta(match[1]);
@@ -275,7 +308,12 @@ export function parseRichText(raw: string): RichTextBlock[] {
   }
 
   if (lastIndex < normalized.length) {
-    blocks.push(...parseProseChunk(normalized.slice(lastIndex)));
+    blocks.push(
+      ...parseProseChunk(normalized.slice(lastIndex), {
+        hasPrecedingBlock: blocks.length > 0,
+        hasFollowingBlock: false,
+      })
+    );
   }
 
   return blocks;

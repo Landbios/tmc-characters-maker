@@ -121,8 +121,8 @@ function renderBlock(
         <div
           key={key}
           aria-hidden="true"
-          className="!mt-0"
-          style={{ height: `${block.lines * 1.4}em` }}
+          className="w-full"
+          style={{ height: `${block.lines * 1.4}em`, marginTop: 0, marginBottom: 0 }}
         />
       );
     case 'divider':
