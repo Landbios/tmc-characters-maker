@@ -21,6 +21,7 @@ import {
   ChevronDown,
   ChevronUp,
   RotateCcw,
+  HelpCircle,
 } from 'lucide-react';
 import { Section, TextAlign, TextContainerStyle, TextFontSize } from '@/types/character';
 
@@ -107,6 +108,7 @@ const toolBtnBase: React.CSSProperties = {
 export function RichTextSectionEditor({ section, onUpdate }: RichTextSectionEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [showStyleControls, setShowStyleControls] = useState(false);
+  const [showCommGuide, setShowCommGuide] = useState(false);
 
   const onFocus = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     e.currentTarget.style.borderColor = '#0353a4';
@@ -313,7 +315,101 @@ export function RichTextSectionEditor({ section, onUpdate }: RichTextSectionEdit
           <Music size={12} />
           <span>Música</span>
         </button>
+
+        <button
+          type="button"
+          style={{
+            ...toolBtnBase,
+            marginLeft: 'auto',
+            borderColor: showCommGuide ? '#0353a4' : 'var(--border-light)',
+            color: showCommGuide ? '#0353a4' : 'var(--text-muted)',
+          }}
+          title="Guía rápida de colores individuales para transmisiones [comm]"
+          onClick={() => setShowCommGuide((prev) => !prev)}
+        >
+          <HelpCircle size={12} />
+          <span>Guía Comm</span>
+        </button>
       </div>
+
+      {/* Collapsible Comm Color Guide + Quick Colored Comm Inserter */}
+      {showCommGuide && (
+        <div
+          style={{
+            padding: '0.55rem 0.65rem',
+            backgroundColor: 'var(--surface)',
+            border: '1px solid var(--border-light)',
+            borderRadius: '4px',
+            fontFamily: 'var(--font-mono)',
+            fontSize: '0.66rem',
+            color: 'var(--text-muted)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.4rem',
+          }}
+        >
+          <div style={{ color: 'var(--text)', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            Color individual por transmisión
+          </div>
+          <div>
+            Agrega <code style={{ color: 'var(--text)' }}>|#HEX</code> después del título para dar un color único a esa transmisión:
+          </div>
+          <div
+            style={{
+              backgroundColor: 'var(--surface-alt)',
+              border: '1px solid var(--border-light)',
+              borderRadius: '3px',
+              padding: '0.35rem 0.5rem',
+              color: 'var(--text)',
+              lineHeight: 1.5,
+            }}
+          >
+            <div>[comm:SEÑAL #01|#22c55e] ... [/comm]</div>
+            <div>[comm:#ef4444] ... [/comm]</div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexWrap: 'wrap' }}>
+            <span>Insertar con color:</span>
+            {COMM_COLOR_PRESETS.map((preset) => (
+              <button
+                key={preset.value}
+                type="button"
+                title={`Insertar transmisión en ${preset.name} (${preset.value})`}
+                onClick={() =>
+                  wrapSelection(
+                    `\n[comm:TRANSMISIÓN|${preset.value}]\n`,
+                    '\n[/comm]\n',
+                    'Registro de voz interceptado...'
+                  )
+                }
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.25rem',
+                  padding: '0.18rem 0.4rem',
+                  borderRadius: '3px',
+                  border: '1px solid var(--border-light)',
+                  backgroundColor: 'var(--surface-alt)',
+                  color: 'var(--text)',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.6rem',
+                  cursor: 'pointer',
+                }}
+              >
+                <span
+                  style={{
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '9999px',
+                    backgroundColor: preset.value,
+                    display: 'inline-block',
+                  }}
+                />
+                <span>{preset.name.split(' ')[0]}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Story Content Textarea */}
       <textarea
