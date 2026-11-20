@@ -19,6 +19,7 @@ import {
 import { useCharacterStore } from '@/store/character-store';
 import Link from 'next/link';
 import ImageUploader from './ImageUploader';
+import { RichTextSectionEditor } from './RichTextSectionEditor';
 
 const FONTS_HEADING = [
   { name: 'Cormorant Garamond', value: 'var(--font-cormorant)' },
@@ -311,6 +312,9 @@ export default function CharacterEditor() {
       title: type === 'custom_text' ? 'Nueva Sección' : undefined,
       content: type === 'custom_text' ? 'Agrega tu contenido aquí...' : undefined,
       imageUrl: type === 'custom_image' || type === 'separator' ? '' : undefined,
+      ...(type === 'custom_text'
+        ? { textAlign: 'left' as const, containerStyle: 'plain' as const, fontSize: 'md' as const }
+        : {}),
     };
     updateField('layout', [...character.layout, newSection]);
   };
@@ -1064,24 +1068,10 @@ function SortableSectionRow({ section, onRemove, onUpdate }: { section: Section;
       {expanded && isCustom && (
         <div style={{ padding: '0.5rem 0.75rem', borderTop: '1px solid var(--border)', backgroundColor: 'var(--surface-alt)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           {section.type === 'custom_text' && (
-            <>
-              <input
-                style={S.input}
-                placeholder="Section title"
-                value={section.title || ''}
-                onChange={e => onUpdate(section.id, { title: e.target.value })}
-                onFocus={onFocus}
-                onBlur={onBlur}
-              />
-              <textarea
-                style={{ ...S.textarea, minHeight: '70px' }}
-                placeholder="Content…"
-                value={section.content || ''}
-                onChange={e => onUpdate(section.id, { content: e.target.value })}
-                onFocus={onFocus}
-                onBlur={onBlur}
-              />
-            </>
+            <RichTextSectionEditor
+              section={section}
+              onUpdate={(updates) => onUpdate(section.id, updates)}
+            />
           )}
           {(section.type === 'custom_image' || section.type === 'separator') && (
             <ImageUploader

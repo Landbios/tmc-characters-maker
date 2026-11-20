@@ -8,7 +8,7 @@ import { Section } from '@/types/character';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { RichTextSectionEditor } from '@/components/RichTextSectionEditor';
 
 interface SortableSectionProps {
   section: Section;
@@ -77,18 +77,10 @@ export function SortableSection({ section, onRemove, onUpdate }: SortableSection
 
       {/* Inline Editor for Custom Fields */}
       {section.type === 'custom_text' && (
-        <div className="mt-3 space-y-2 pl-8">
-          <Input 
-            placeholder="Title (optional)" 
-            value={section.title || ''} 
-            onChange={(e) => onUpdate(section.id, { title: e.target.value })}
-            className="h-8 text-xs"
-          />
-          <Textarea 
-            placeholder="Content" 
-            value={section.content || ''} 
-            onChange={(e) => onUpdate(section.id, { content: e.target.value })}
-            className="min-h-[60px] text-xs"
+        <div className="mt-3 pl-8">
+          <RichTextSectionEditor
+            section={section}
+            onUpdate={(updates) => onUpdate(section.id, updates)}
           />
         </div>
       )}

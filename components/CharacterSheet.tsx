@@ -8,6 +8,7 @@ import ImageWithFallback from '@/components/ImageWithFallback';
 import { COMBAT_STATS_INFO } from '@/utils/combatStats';
 import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
+import { RichTextRenderer } from '@/components/RichTextRenderer';
 
 interface CharacterSheetProps {
   character: Character;
@@ -169,16 +170,7 @@ export default function CharacterSheet({ character, preview = false }: Character
         );
 
       case 'custom_text':
-        return (
-          <div key={section.id} className="w-full max-w-2xl text-center space-y-2">
-            {section.title && (
-              <h3 className="text-xl" style={{ fontFamily: 'var(--font-heading)', color: 'var(--text-color)' }}>{section.title}</h3>
-            )}
-            {section.content && (
-              <p className="opacity-80 leading-relaxed">{section.content}</p>
-            )}
-          </div>
-        );
+        return <RichTextRenderer key={section.id} section={section} cardBg={cardBg} />;
 
       case 'custom_image':
         return (

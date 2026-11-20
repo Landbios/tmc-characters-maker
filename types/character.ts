@@ -9,6 +9,10 @@ export interface NobleArt {
 
 export type SectionType = 'identity' | 'stats' | 'blaze' | 'battlefront' | 'combat_data' | 'noble_arts' | 'custom_text' | 'custom_image' | 'separator';
 
+export type TextAlign = 'left' | 'center' | 'right' | 'justify';
+export type TextContainerStyle = 'plain' | 'card' | 'dossier';
+export type TextFontSize = 'sm' | 'md' | 'lg';
+
 export interface Section {
   id: string;
   type: SectionType;
@@ -16,6 +20,12 @@ export interface Section {
   content?: string;
   imageUrl?: string;
   isCore?: boolean;
+  // Optional customization for custom_text sections
+  textAlign?: TextAlign;
+  containerStyle?: TextContainerStyle;
+  fontSize?: TextFontSize;
+  fontFamily?: string;
+  textColor?: string;
 }
 
 export type Character = {
