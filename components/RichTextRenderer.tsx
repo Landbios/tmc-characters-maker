@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Section } from '@/types/character';
 import { parseRichText, RichTextBlock, RichTextInline } from '@/utils/richText';
+import { MusicBlockPlayer } from '@/components/MusicBlockPlayer';
 
 interface RichTextRendererProps {
   section: Section;
@@ -90,9 +91,40 @@ function renderInlineNodes(nodes: RichTextInline[], keyPrefix: string): React.Re
   });
 }
 
-function renderBlock(block: RichTextBlock, index: number): React.ReactNode {
+function hexToRgba(hex: string, alpha: number): string | undefined {
+  const clean = hex.replace('#', '');
+  if (clean.length === 3) {
+    const r = parseInt(clean[0] + clean[0], 16);
+    const g = parseInt(clean[1] + clean[1], 16);
+    const b = parseInt(clean[2] + clean[2], 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+  if (clean.length === 6) {
+    const r = parseInt(clean.slice(0, 2), 16);
+    const g = parseInt(clean.slice(2, 4), 16);
+    const b = parseInt(clean.slice(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+  return undefined;
+}
+
+function renderBlock(
+  block: RichTextBlock,
+  index: number,
+  cardBg: string,
+  defaultCommColor?: string
+): React.ReactNode {
   const key = `block-${index}`;
   switch (block.type) {
+    case 'spacer':
+      return (
+        <div
+          key={key}
+          aria-hidden="true"
+          className="!mt-0"
+          style={{ height: `${block.lines * 1.4}em` }}
+        />
+      );
     case 'divider':
       return (
         <div key={key} className="rt-divider" aria-hidden="true">
@@ -101,17 +133,55 @@ function renderBlock(block: RichTextBlock, index: number): React.ReactNode {
           <span className="rt-divider-line" />
         </div>
       );
-    case 'comm':
+    case 'comm': {
+      const effectiveColor = block.color || defaultCommColor;
+      const commStyle: React.CSSProperties | undefined = effectiveColor
+        ? {
+            borderLeftColor: effectiveColor,
+            borderTopColor: hexToRgba(effectiveColor, 0.35),
+            borderRightColor: hexToRgba(effectiveColor, 0.28),
+            borderBottomColor: hexToRgba(effectiveColor, 0.35),
+            backgroundColor: hexToRgba(effectiveColor, 0.08),
+          }
+        : undefined;
+
+      const headerStyle: React.CSSProperties | undefined = effectiveColor
+        ? {
+            color: effectiveColor,
+            borderBottomColor: hexToRgba(effectiveColor, 0.38),
+            opacity: 0.9,
+          }
+        : undefined;
+
+      const dotStyle: React.CSSProperties | undefined = effectiveColor
+        ? { backgroundColor: effectiveColor, opacity: 1 }
+        : undefined;
+
       return (
-        <blockquote key={key} className="rt-comm my-3">
-          <div className="rt-comm-header">
-            <span className="rt-comm-dot" aria-hidden="true" />
+        <blockquote key={key} className="rt-comm my-3" style={commStyle}>
+          <div className="rt-comm-header" style={headerStyle}>
+            <span className="rt-comm-dot" style={dotStyle} aria-hidden="true" />
             <span>{block.header || 'TRANSMISIÓN ARCHIVADA'}</span>
           </div>
-          <div className="text-[0.92em] leading-relaxed opacity-90">
+          <div
+            className="text-[0.92em] leading-relaxed opacity-90"
+            style={effectiveColor ? { color: effectiveColor } : undefined}
+          >
             {renderInlineNodes(block.children, key)}
           </div>
         </blockquote>
+      );
+    }
+    case 'music':
+      return (
+        <MusicBlockPlayer
+          key={key}
+          url={block.url}
+          title={block.title}
+          displayMode="ambient"
+          compact
+          cardBg={cardBg}
+        />
       );
     case 'paragraph':
       return (
@@ -202,7 +272,7 @@ export function RichTextRenderer({ section, cardBg }: RichTextRendererProps) {
 
       {blocks.length > 0 && (
         <div className="space-y-3">
-          {blocks.map((block, index) => renderBlock(block, index))}
+          {blocks.map((block, index) => renderBlock(block, index, cardBg, section.commColor))}
         </div>
       )}
     </div>

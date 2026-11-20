@@ -9,6 +9,8 @@ import { COMBAT_STATS_INFO } from '@/utils/combatStats';
 import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
 import { RichTextRenderer } from '@/components/RichTextRenderer';
+import { MusicBlockPlayer } from '@/components/MusicBlockPlayer';
+import { SectionGroupRenderer } from '@/components/SectionGroupRenderer';
 
 interface CharacterSheetProps {
   character: Character;
@@ -179,6 +181,28 @@ export default function CharacterSheet({ character, preview = false }: Character
               <ImageWithFallback src={section.imageUrl} alt="Custom" fill className="object-cover" />
             )}
           </div>
+        );
+
+      case 'music_block':
+        return (
+          <MusicBlockPlayer
+            key={section.id}
+            url={section.musicUrl}
+            title={section.title}
+            subtitle={section.musicSubtitle}
+            displayMode={section.musicDisplayMode}
+            cardBg={cardBg}
+          />
+        );
+
+      case 'section_group':
+        return (
+          <SectionGroupRenderer
+            key={section.id}
+            section={section}
+            cardBg={cardBg}
+            renderChild={(child) => renderSection(child)}
+          />
         );
 
       default:

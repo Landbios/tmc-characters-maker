@@ -7,11 +7,23 @@ export interface NobleArt {
   description: string;
 }
 
-export type SectionType = 'identity' | 'stats' | 'blaze' | 'battlefront' | 'combat_data' | 'noble_arts' | 'custom_text' | 'custom_image' | 'separator';
+export type SectionType =
+  | 'identity'
+  | 'stats'
+  | 'blaze'
+  | 'battlefront'
+  | 'combat_data'
+  | 'noble_arts'
+  | 'custom_text'
+  | 'custom_image'
+  | 'separator'
+  | 'section_group'
+  | 'music_block';
 
 export type TextAlign = 'left' | 'center' | 'right' | 'justify';
 export type TextContainerStyle = 'plain' | 'card' | 'dossier';
 export type TextFontSize = 'sm' | 'md' | 'lg';
+export type MusicDisplayMode = 'ambient' | 'video';
 
 export interface Section {
   id: string;
@@ -26,6 +38,15 @@ export interface Section {
   fontSize?: TextFontSize;
   fontFamily?: string;
   textColor?: string;
+  commColor?: string;
+  // Optional fields for section_group
+  children?: Section[];
+  collapsibleOnSheet?: boolean;
+  defaultCollapsed?: boolean;
+  // Optional fields for music_block
+  musicUrl?: string;
+  musicSubtitle?: string;
+  musicDisplayMode?: MusicDisplayMode;
 }
 
 export type Character = {

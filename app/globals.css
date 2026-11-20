@@ -383,3 +383,36 @@ body {
 .rt-static-export .rt-redacted-inner {
   opacity: 1 !important;
 }
+
+/* ── Ambient Music Equalizer & Print Fallback (Phase 8) ────────────── */
+@keyframes rt-eq-bar {
+  0%, 100% {
+    transform: scaleY(0.35);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.rt-eq-bar {
+  display: inline-block;
+  width: 2.5px;
+  height: 12px;
+  border-radius: 1px;
+  background-color: currentColor;
+  transform-origin: bottom;
+  animation: rt-eq-bar 0.85s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rt-eq-bar {
+    animation: none;
+    transform: scaleY(0.7);
+  }
+}
+
+@media print {
+  .rt-music-iframe-wrap {
+    display: none !important;
+  }
+}

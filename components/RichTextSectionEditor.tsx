@@ -12,6 +12,7 @@ import {
   EyeOff,
   CornerDownLeft,
   Minus,
+  Music,
   AlignLeft,
   AlignCenter,
   AlignRight,
@@ -39,6 +40,14 @@ const SECTION_FONTS = [
   { name: 'Cinzel (Serif)', value: 'var(--font-cinzel)' },
   { name: 'Libre Baskerville (Serif)', value: 'var(--font-baskerville)' },
   { name: 'Monospace (Terminal)', value: 'var(--font-mono)' },
+];
+
+const COMM_COLOR_PRESETS = [
+  { name: 'Terminal Verde', value: '#22c55e' },
+  { name: 'Ámbar Retro', value: '#f59e0b' },
+  { name: 'Cian Academia', value: '#06b6d4' },
+  { name: 'Alerta Roja', value: '#ef4444' },
+  { name: 'Frecuencia Violeta', value: '#a855f7' },
 ];
 
 const inputStyle: React.CSSProperties = {
@@ -252,7 +261,7 @@ export function RichTextSectionEditor({ section, onUpdate }: RichTextSectionEdit
         <button
           type="button"
           style={toolBtnBase}
-          title="Cita de comunicación antigua ([comm:REGISTRO]...[/comm])"
+          title="Cita de comunicación antigua ([comm:REGISTRO]...[/comm] o [comm:REGISTRO|#22c55e]...[/comm])"
           onClick={() => wrapSelection('\n[comm:TRANSMISIÓN #01]\n', '\n[/comm]\n', 'Registro de voz interceptado...')}
         >
           <Radio size={12} />
@@ -274,11 +283,11 @@ export function RichTextSectionEditor({ section, onUpdate }: RichTextSectionEdit
         <button
           type="button"
           style={toolBtnBase}
-          title="Insertar salto de párrafo"
-          onClick={() => insertAtCursor('\n\n')}
+          title="Insertar salto de línea / espacio extra (puedes pulsarlo varias veces como Enter)"
+          onClick={() => insertAtCursor('\n')}
         >
           <CornerDownLeft size={12} />
-          <span>Párrafo</span>
+          <span>Salto</span>
         </button>
         <button
           type="button"
@@ -288,6 +297,21 @@ export function RichTextSectionEditor({ section, onUpdate }: RichTextSectionEdit
         >
           <Minus size={12} />
           <span>Divisor</span>
+        </button>
+        <button
+          type="button"
+          style={toolBtnBase}
+          title="Insertar música ambiental de YouTube ([music:Título|URL])"
+          onClick={() =>
+            wrapSelection(
+              '\n\n[music:',
+              '|https://www.youtube.com/watch?v=VIDEO_ID]\n\n',
+              'Tema Ambiental'
+            )
+          }
+        >
+          <Music size={12} />
+          <span>Música</span>
         </button>
       </div>
 
@@ -456,6 +480,62 @@ export function RichTextSectionEditor({ section, onUpdate }: RichTextSectionEdit
                     title="Restablecer al color de la ficha"
                     style={toolBtnBase}
                     onClick={() => onUpdate({ textColor: undefined })}
+                  >
+                    <RotateCcw size={11} />
+                    <span>Reset</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Transmission (Comm) Color Override */}
+            <div>
+              <span style={labelStyle}>Color de Transmisiones (Opcional)</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexWrap: 'wrap', marginBottom: '0.35rem' }}>
+                {COMM_COLOR_PRESETS.map((preset) => {
+                  const active = section.commColor?.toLowerCase() === preset.value.toLowerCase();
+                  return (
+                    <button
+                      key={preset.value}
+                      type="button"
+                      title={`${preset.name} (${preset.value})`}
+                      onClick={() => onUpdate({ commColor: preset.value })}
+                      style={{
+                        width: '1.35rem',
+                        height: '1.35rem',
+                        borderRadius: '3px',
+                        backgroundColor: preset.value,
+                        border: active ? '2px solid var(--text)' : '1px solid var(--border-light)',
+                        cursor: 'pointer',
+                        padding: 0,
+                      }}
+                    />
+                  );
+                })}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <input
+                  type="color"
+                  value={section.commColor || '#22c55e'}
+                  onChange={(e) => onUpdate({ commColor: e.target.value })}
+                  style={{
+                    width: '2rem',
+                    height: '2rem',
+                    padding: '2px',
+                    backgroundColor: 'var(--surface)',
+                    border: '1px solid var(--border-light)',
+                    cursor: 'pointer',
+                  }}
+                />
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-muted)', flex: 1 }}>
+                  {section.commColor || 'Heredado del texto'}
+                </span>
+                {section.commColor && (
+                  <button
+                    type="button"
+                    title="Restablecer color de transmisiones"
+                    style={toolBtnBase}
+                    onClick={() => onUpdate({ commColor: undefined })}
                   >
                     <RotateCcw size={11} />
                     <span>Reset</span>

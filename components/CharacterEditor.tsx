@@ -14,12 +14,14 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   Trash2, ArrowLeft, RefreshCw, Loader2, Save, Plus, GripVertical,
   Image as ImageIcon, Type, Minus, User, Palette, Layout,
-  ChevronDown, ChevronUp, Shield, Sword, Scroll, Share2
+  ChevronDown, ChevronUp, Shield, Sword, Scroll, Share2, FolderOpen, Music
 } from 'lucide-react';
 import { useCharacterStore } from '@/store/character-store';
 import Link from 'next/link';
 import ImageUploader from './ImageUploader';
 import { RichTextSectionEditor } from './RichTextSectionEditor';
+import { MusicBlockEditor } from './MusicBlockEditor';
+import { SectionGroupEditor } from './SectionGroupEditor';
 
 const FONTS_HEADING = [
   { name: 'Cormorant Garamond', value: 'var(--font-cormorant)' },
@@ -309,11 +311,24 @@ export default function CharacterEditor() {
       id: uuidv4(),
       type,
       isCore: false,
-      title: type === 'custom_text' ? 'Nueva Sección' : undefined,
+      title:
+        type === 'custom_text'
+          ? 'Nueva Sección'
+          : type === 'section_group'
+            ? 'Nuevo Grupo'
+            : type === 'music_block'
+              ? 'Tema Ambiental'
+              : undefined,
       content: type === 'custom_text' ? 'Agrega tu contenido aquí...' : undefined,
       imageUrl: type === 'custom_image' || type === 'separator' ? '' : undefined,
       ...(type === 'custom_text'
         ? { textAlign: 'left' as const, containerStyle: 'plain' as const, fontSize: 'md' as const }
+        : {}),
+      ...(type === 'section_group'
+        ? { children: [], collapsibleOnSheet: true, defaultCollapsed: false }
+        : {}),
+      ...(type === 'music_block'
+        ? { musicUrl: '', musicSubtitle: '', musicDisplayMode: 'ambient' as const }
         : {}),
     };
     updateField('layout', [...character.layout, newSection]);
@@ -325,6 +340,36 @@ export default function CharacterEditor() {
 
   const updateSection = (id: string, updates: Partial<Section>) => {
     updateField('layout', character.layout.map(s => s.id === id ? { ...s, ...updates } : s));
+  };
+
+  const moveSectionToGroup = (sectionId: string, groupId: string) => {
+    const targetSection = character.layout.find((s) => s.id === sectionId);
+    if (!targetSection || targetSection.type === 'section_group' || targetSection.isCore) return;
+    const nextLayout = character.layout
+      .filter((s) => s.id !== sectionId)
+      .map((s) =>
+        s.id === groupId
+          ? { ...s, children: [...(s.children || []), targetSection] }
+          : s
+      );
+    updateField('layout', nextLayout);
+  };
+
+  const extractSectionFromGroup = (groupId: string, childId: string) => {
+    const groupIdx = character.layout.findIndex((s) => s.id === groupId);
+    if (groupIdx === -1) return;
+    const group = character.layout[groupIdx];
+    const child = (group.children || []).find((c) => c.id === childId);
+    if (!child) return;
+
+    const updatedGroup: Section = {
+      ...group,
+      children: (group.children || []).filter((c) => c.id !== childId),
+    };
+    const nextLayout = [...character.layout];
+    nextLayout[groupIdx] = updatedGroup;
+    nextLayout.splice(groupIdx + 1, 0, child);
+    updateField('layout', nextLayout);
   };
 
   const addNobleArt = () => {
@@ -914,6 +959,22 @@ export default function CharacterEditor() {
               >
                 <Minus size={12} /> Separador
               </button>
+              <button
+                style={S.outlineBtn}
+                onClick={() => addSection('section_group')}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#0353a4'; (e.currentTarget as HTMLButtonElement).style.borderColor = '#0353a4'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; }}
+              >
+                <FolderOpen size={12} /> Grupo
+              </button>
+              <button
+                style={S.outlineBtn}
+                onClick={() => addSection('music_block')}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#0353a4'; (e.currentTarget as HTMLButtonElement).style.borderColor = '#0353a4'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; }}
+              >
+                <Music size={12} /> Música
+              </button>
             </div>
 
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -923,8 +984,11 @@ export default function CharacterEditor() {
                     <SortableSectionRow
                       key={section.id}
                       section={section}
+                      groups={character.layout.filter((s) => s.type === 'section_group')}
                       onRemove={removeSection}
                       onUpdate={updateSection}
+                      onMoveToGroup={moveSectionToGroup}
+                      onExtractChild={extractSectionFromGroup}
                     />
                   ))}
                 </div>
@@ -1001,7 +1065,21 @@ function RankField({ label, value, onChange }: { label: string; value: Rank; onC
   );
 }
 
-function SortableSectionRow({ section, onRemove, onUpdate }: { section: Section; onRemove: (id: string) => void; onUpdate: (id: string, u: Partial<Section>) => void }) {
+function SortableSectionRow({
+  section,
+  groups,
+  onRemove,
+  onUpdate,
+  onMoveToGroup,
+  onExtractChild,
+}: {
+  section: Section;
+  groups: Section[];
+  onRemove: (id: string) => void;
+  onUpdate: (id: string, u: Partial<Section>) => void;
+  onMoveToGroup: (sectionId: string, groupId: string) => void;
+  onExtractChild: (groupId: string, childId: string) => void;
+}) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: section.id });
   const style = { transform: CSS.Transform.toString(transform), transition };
   const [expanded, setExpanded] = useState(false);
@@ -1014,6 +1092,8 @@ function SortableSectionRow({ section, onRemove, onUpdate }: { section: Section;
       case 'combat_data': return <Sword size={13} />;
       case 'noble_arts': return <Scroll size={13} />;
       case 'separator': return <Minus size={13} />;
+      case 'section_group': return <FolderOpen size={13} />;
+      case 'music_block': return <Music size={13} />;
       default: return <Type size={13} />;
     }
   };
@@ -1028,11 +1108,20 @@ function SortableSectionRow({ section, onRemove, onUpdate }: { section: Section;
       case 'separator': return 'Separator';
       case 'custom_text': return section.title || 'Custom Text';
       case 'custom_image': return 'Custom Image';
+      case 'section_group': return `${section.title || 'Grupo'} (${(section.children || []).length})`;
+      case 'music_block': return section.title || 'Música Ambiental';
       default: return section.type;
     }
   };
 
-  const isCustom = section.type === 'custom_text' || section.type === 'custom_image' || section.type === 'separator';
+  const isCustom =
+    section.type === 'custom_text' ||
+    section.type === 'custom_image' ||
+    section.type === 'separator' ||
+    section.type === 'section_group' ||
+    section.type === 'music_block';
+
+  const canMoveToGroup = isCustom && section.type !== 'section_group' && groups.length > 0;
 
   return (
     <div ref={setNodeRef} style={{ ...style, border: '1px solid var(--border)', backgroundColor: 'var(--surface)', overflow: 'hidden' }}>
@@ -1040,8 +1129,9 @@ function SortableSectionRow({ section, onRemove, onUpdate }: { section: Section;
         <div {...attributes} {...listeners} style={{ cursor: 'grab', color: 'var(--text-muted)', padding: '0.1rem' }}>
           <GripVertical size={14} />
         </div>
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.4rem', fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-          {getIcon()} {getLabel()}
+        <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: '0.4rem', fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+          <span style={{ flexShrink: 0 }}>{getIcon()}</span>
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{getLabel()}</span>
         </div>
         {isCustom && (
           <button
@@ -1073,6 +1163,19 @@ function SortableSectionRow({ section, onRemove, onUpdate }: { section: Section;
               onUpdate={(updates) => onUpdate(section.id, updates)}
             />
           )}
+          {section.type === 'music_block' && (
+            <MusicBlockEditor
+              section={section}
+              onUpdate={(updates) => onUpdate(section.id, updates)}
+            />
+          )}
+          {section.type === 'section_group' && (
+            <SectionGroupEditor
+              section={section}
+              onUpdate={(updates) => onUpdate(section.id, updates)}
+              onExtractChild={(childId) => onExtractChild(section.id, childId)}
+            />
+          )}
           {(section.type === 'custom_image' || section.type === 'separator') && (
             <ImageUploader
               label="URL o Archivo de Imagen"
@@ -1082,6 +1185,26 @@ function SortableSectionRow({ section, onRemove, onUpdate }: { section: Section;
               placeholder="https://..."
               aspectRatio={16/9}
             />
+          )}
+          {canMoveToGroup && (
+            <div style={{ paddingTop: '0.45rem', borderTop: '1px dashed var(--border-light)' }}>
+              <select
+                style={{ ...S.select, height: '1.9rem', fontSize: '0.68rem' }}
+                defaultValue=""
+                onChange={(e) => {
+                  if (e.target.value) {
+                    onMoveToGroup(section.id, e.target.value);
+                  }
+                }}
+              >
+                <option value="">↳ Mover a un grupo…</option>
+                {groups.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.title?.trim() || 'Grupo'}
+                  </option>
+                ))}
+              </select>
+            </div>
           )}
         </div>
       )}

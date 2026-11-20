@@ -14,8 +14,38 @@ export type RichTextInline =
 
 export type RichTextBlock =
   | { type: 'paragraph'; children: RichTextInline[] }
+  | { type: 'spacer'; lines: number }
   | { type: 'divider' }
-  | { type: 'comm'; header?: string; children: RichTextInline[] };
+  | { type: 'comm'; header?: string; color?: string; children: RichTextInline[] }
+  | { type: 'music'; title?: string; url: string };
+
+const HEX_COLOR_RE = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+
+function parseCommMeta(rawMeta?: string): { header?: string; color?: string } {
+  if (!rawMeta) return {};
+  const trimmed = rawMeta.trim();
+  if (!trimmed) return {};
+
+  // Allow `[comm:#22c55e]` (color only)
+  if (HEX_COLOR_RE.test(trimmed)) {
+    return { color: trimmed };
+  }
+
+  // Allow `[comm:TRANSMISIÓN #01|#22c55e]` (header + color)
+  const pipeIndex = trimmed.lastIndexOf('|');
+  if (pipeIndex !== -1) {
+    const maybeHeader = trimmed.slice(0, pipeIndex).trim();
+    const maybeColor = trimmed.slice(pipeIndex + 1).trim();
+    if (HEX_COLOR_RE.test(maybeColor)) {
+      return {
+        header: maybeHeader || undefined,
+        color: maybeColor,
+      };
+    }
+  }
+
+  return { header: trimmed };
+}
 
 const INLINE_TAG_MAP: Record<string, InlineTagType> = {
   b: 'bold',
@@ -145,6 +175,7 @@ function parseProseChunk(chunk: string): RichTextBlock[] {
   const blocks: RichTextBlock[] = [];
   const rawLines = chunk.split('\n');
   let paragraphBuffer: string[] = [];
+  let consecutiveBlankLines = 0;
 
   const flushParagraph = () => {
     if (paragraphBuffer.length === 0) return;
@@ -158,17 +189,44 @@ function parseProseChunk(chunk: string): RichTextBlock[] {
     }
   };
 
+  const flushExtraBlankLines = () => {
+    // 1 blank line (`\n\n`) is the normal paragraph gap; every extra blank line
+    // beyond the first becomes an explicit vertical spacer, just like pressing Enter repeatedly.
+    if (consecutiveBlankLines > 1 && blocks.length > 0) {
+      blocks.push({ type: 'spacer', lines: consecutiveBlankLines - 1 });
+    }
+    consecutiveBlankLines = 0;
+  };
+
   for (const line of rawLines) {
     const trimmed = line.trim();
 
     if (trimmed === '') {
       flushParagraph();
+      consecutiveBlankLines++;
       continue;
     }
+
+    flushExtraBlankLines();
 
     if (trimmed.toLowerCase() === '[hr]' || /^-{3,}$/.test(trimmed)) {
       flushParagraph();
       blocks.push({ type: 'divider' });
+      continue;
+    }
+
+    const musicMatch = trimmed.match(/^\[music:([^\]]+)\]$/i);
+    if (musicMatch) {
+      flushParagraph();
+      const rawMusic = musicMatch[1].trim();
+      const pipeIdx = rawMusic.lastIndexOf('|');
+      if (pipeIdx !== -1) {
+        const title = rawMusic.slice(0, pipeIdx).trim() || undefined;
+        const url = rawMusic.slice(pipeIdx + 1).trim();
+        blocks.push({ type: 'music', title, url });
+      } else {
+        blocks.push({ type: 'music', url: rawMusic });
+      }
       continue;
     }
 
@@ -202,12 +260,13 @@ export function parseRichText(raw: string): RichTextBlock[] {
       blocks.push(...parseProseChunk(normalized.slice(lastIndex, match.index)));
     }
 
-    const header = match[1]?.trim() || undefined;
+    const { header, color } = parseCommMeta(match[1]);
     const body = match[2].replace(/^\n+|\n+$/g, '');
     if (body.length > 0 || header) {
       blocks.push({
         type: 'comm',
         header,
+        color,
         children: parseInline(body),
       });
     }
