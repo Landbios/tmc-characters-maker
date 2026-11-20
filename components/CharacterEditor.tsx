@@ -6,7 +6,7 @@ import { createClient } from '@/utils/supabase/client';
 import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { DndContext, closestCenter, pointerWithin, CollisionDetection, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Section, SectionType, Rank, NobleArt } from '@/types/character';
@@ -297,12 +297,35 @@ export default function CharacterEditor() {
     toast.success('¡Enlace público copiado al portapapeles!');
   };
 
+  const layoutCollisionDetection: CollisionDetection = (args) => {
+    const pointerCollisions = pointerWithin(args);
+    const groupDropHit = pointerCollisions.find((c) => String(c.id).startsWith('group-drop:'));
+    if (groupDropHit) return [groupDropHit];
+    return closestCenter(args);
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    if (over && active.id !== over.id) {
-      const oldIndex = character.layout.findIndex((item) => item.id === active.id);
-      const newIndex = character.layout.findIndex((item) => item.id === over.id);
-      updateField('layout', arrayMove(character.layout, oldIndex, newIndex));
+    if (!over) return;
+
+    const overId = String(over.id);
+    const activeId = String(active.id);
+
+    // Dropping an external section into an expanded group's dropzone
+    if (overId.startsWith('group-drop:')) {
+      const targetGroupId = overId.slice('group-drop:'.length);
+      if (activeId !== targetGroupId) {
+        moveSectionToGroup(activeId, targetGroupId);
+      }
+      return;
+    }
+
+    if (activeId !== overId) {
+      const oldIndex = character.layout.findIndex((item) => item.id === activeId);
+      const newIndex = character.layout.findIndex((item) => item.id === overId);
+      if (oldIndex !== -1 && newIndex !== -1) {
+        updateField('layout', arrayMove(character.layout, oldIndex, newIndex));
+      }
     }
   };
 
@@ -343,9 +366,12 @@ export default function CharacterEditor() {
   };
 
   const moveSectionToGroup = (sectionId: string, groupId: string) => {
-    const targetSection = character.layout.find((s) => s.id === sectionId);
-    if (!targetSection || targetSection.type === 'section_group' || targetSection.isCore) return;
-    const nextLayout = character.layout
+    const currentLayout = useCharacterStore.getState().character.layout;
+    const targetSection = currentLayout.find((s) => s.id === sectionId);
+    if (!targetSection || targetSection.type === 'section_group') return;
+    if (!currentLayout.some((s) => s.id === groupId && s.type === 'section_group')) return;
+
+    const nextLayout = currentLayout
       .filter((s) => s.id !== sectionId)
       .map((s) =>
         s.id === groupId
@@ -353,12 +379,15 @@ export default function CharacterEditor() {
           : s
       );
     updateField('layout', nextLayout);
+    const targetGroup = currentLayout.find((s) => s.id === groupId);
+    toast.success(`Movido a "${targetGroup?.title?.trim() || 'Grupo'}"`);
   };
 
   const extractSectionFromGroup = (groupId: string, childId: string) => {
-    const groupIdx = character.layout.findIndex((s) => s.id === groupId);
+    const currentLayout = useCharacterStore.getState().character.layout;
+    const groupIdx = currentLayout.findIndex((s) => s.id === groupId);
     if (groupIdx === -1) return;
-    const group = character.layout[groupIdx];
+    const group = currentLayout[groupIdx];
     const child = (group.children || []).find((c) => c.id === childId);
     if (!child) return;
 
@@ -366,7 +395,7 @@ export default function CharacterEditor() {
       ...group,
       children: (group.children || []).filter((c) => c.id !== childId),
     };
-    const nextLayout = [...character.layout];
+    const nextLayout = [...currentLayout];
     nextLayout[groupIdx] = updatedGroup;
     nextLayout.splice(groupIdx + 1, 0, child);
     updateField('layout', nextLayout);
@@ -977,7 +1006,7 @@ export default function CharacterEditor() {
               </button>
             </div>
 
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <DndContext sensors={sensors} collisionDetection={layoutCollisionDetection} onDragEnd={handleDragEnd}>
               <SortableContext items={character.layout.map(s => s.id)} strategy={verticalListSortingStrategy}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                   {character.layout.map((section) => (
@@ -985,6 +1014,7 @@ export default function CharacterEditor() {
                       key={section.id}
                       section={section}
                       groups={character.layout.filter((s) => s.type === 'section_group')}
+                      externalSections={character.layout.filter((s) => s.type !== 'section_group')}
                       onRemove={removeSection}
                       onUpdate={updateSection}
                       onMoveToGroup={moveSectionToGroup}
@@ -1068,6 +1098,7 @@ function RankField({ label, value, onChange }: { label: string; value: Rank; onC
 function SortableSectionRow({
   section,
   groups,
+  externalSections,
   onRemove,
   onUpdate,
   onMoveToGroup,
@@ -1075,6 +1106,7 @@ function SortableSectionRow({
 }: {
   section: Section;
   groups: Section[];
+  externalSections: Section[];
   onRemove: (id: string) => void;
   onUpdate: (id: string, u: Partial<Section>) => void;
   onMoveToGroup: (sectionId: string, groupId: string) => void;
@@ -1172,7 +1204,9 @@ function SortableSectionRow({
           {section.type === 'section_group' && (
             <SectionGroupEditor
               section={section}
+              availableExternalSections={externalSections}
               onUpdate={(updates) => onUpdate(section.id, updates)}
+              onMoveIntoGroup={(sectionId) => onMoveToGroup(sectionId, section.id)}
               onExtractChild={(childId) => onExtractChild(section.id, childId)}
             />
           )}
@@ -1190,7 +1224,7 @@ function SortableSectionRow({
             <div style={{ paddingTop: '0.45rem', borderTop: '1px dashed var(--border-light)' }}>
               <select
                 style={{ ...S.select, height: '1.9rem', fontSize: '0.68rem' }}
-                defaultValue=""
+                value=""
                 onChange={(e) => {
                   if (e.target.value) {
                     onMoveToGroup(section.id, e.target.value);

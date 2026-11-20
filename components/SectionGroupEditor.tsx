@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { useDroppable } from '@dnd-kit/core';
 import {
   Type,
   Image as ImageIcon,
@@ -13,6 +14,10 @@ import {
   ArrowDown,
   Trash2,
   FolderOutput,
+  FolderInput,
+  Shield,
+  Sword,
+  Scroll,
 } from 'lucide-react';
 import { Section } from '@/types/character';
 import { RichTextSectionEditor } from './RichTextSectionEditor';
@@ -21,7 +26,9 @@ import ImageUploader from './ImageUploader';
 
 interface SectionGroupEditorProps {
   section: Section;
+  availableExternalSections?: Section[];
   onUpdate: (updates: Partial<Section>) => void;
+  onMoveIntoGroup?: (sectionId: string) => void;
   onExtractChild: (childId: string) => void;
 }
 
@@ -77,8 +84,17 @@ const iconBtnStyle: React.CSSProperties = {
   justifyContent: 'center',
 };
 
-export function SectionGroupEditor({ section, onUpdate, onExtractChild }: SectionGroupEditorProps) {
+export function SectionGroupEditor({
+  section,
+  availableExternalSections = [],
+  onUpdate,
+  onMoveIntoGroup,
+  onExtractChild,
+}: SectionGroupEditorProps) {
   const [expandedChildId, setExpandedChildId] = useState<string | null>(null);
+  const { setNodeRef: setDropRef, isOver } = useDroppable({
+    id: `group-drop:${section.id}`,
+  });
   const children = section.children || [];
   const collapsibleOnSheet = section.collapsibleOnSheet !== false;
   const defaultCollapsed = section.defaultCollapsed === true;
@@ -133,6 +149,17 @@ export function SectionGroupEditor({ section, onUpdate, onExtractChild }: Sectio
 
   const getChildIcon = (type: string) => {
     switch (type) {
+      case 'stats':
+        return <Type size={12} />;
+      case 'blaze':
+        return <ImageIcon size={12} />;
+      case 'battlefront':
+      case 'clan':
+        return <Shield size={12} />;
+      case 'combat_data':
+        return <Sword size={12} />;
+      case 'noble_arts':
+        return <Scroll size={12} />;
       case 'custom_text':
         return <Type size={12} />;
       case 'custom_image':
@@ -147,7 +174,18 @@ export function SectionGroupEditor({ section, onUpdate, onExtractChild }: Sectio
   };
 
   const getChildLabel = (child: Section) => {
-    switch (child.type) {
+    switch (child.type as string) {
+      case 'stats':
+        return 'Estadísticas Básicas';
+      case 'blaze':
+        return 'Blaze & Elementos';
+      case 'battlefront':
+      case 'clan':
+        return 'Frente de Batalla';
+      case 'combat_data':
+        return 'Datos de Combate';
+      case 'noble_arts':
+        return 'Artes Nobles';
       case 'custom_text':
         return child.title?.trim() || 'Texto';
       case 'custom_image':
@@ -160,6 +198,12 @@ export function SectionGroupEditor({ section, onUpdate, onExtractChild }: Sectio
         return 'Elemento';
     }
   };
+
+  const isChildEditable = (child: Section) =>
+    child.type === 'custom_text' ||
+    child.type === 'custom_image' ||
+    child.type === 'separator' ||
+    child.type === 'music_block';
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
@@ -251,25 +295,68 @@ export function SectionGroupEditor({ section, onUpdate, onExtractChild }: Sectio
         </div>
       </div>
 
-      {/* Nested Children List */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+      {/* Pull existing external section into this group */}
+      {onMoveIntoGroup && availableExternalSections.length > 0 && (
+        <div>
+          <span style={labelStyle}>Mover sección existente aquí</span>
+          <select
+            style={{ ...inputStyle, height: '2rem', fontSize: '0.72rem', cursor: 'pointer' }}
+            value=""
+            onChange={(e) => {
+              if (e.target.value) {
+                onMoveIntoGroup(e.target.value);
+              }
+            }}
+          >
+            <option value="">↳ Selecciona una sección externa…</option>
+            {availableExternalSections.map((ext) => (
+              <option key={ext.id} value={ext.id}>
+                {getChildLabel(ext)}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {/* Drag-and-drop zone + Nested Children List */}
+      <div
+        ref={setDropRef}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.35rem',
+          padding: '0.45rem',
+          borderRadius: '4px',
+          border: isOver ? '2px dashed #0353a4' : '1px dashed var(--border-light)',
+          backgroundColor: isOver ? 'rgba(3, 83, 164, 0.08)' : 'transparent',
+          transition: 'border-color 0.15s, background-color 0.15s',
+        }}
+      >
         {children.length === 0 ? (
           <div
             style={{
-              padding: '0.65rem',
+              padding: '0.55rem',
               textAlign: 'center',
               fontFamily: 'var(--font-mono)',
               fontSize: '0.68rem',
-              color: 'var(--text-muted)',
-              border: '1px dashed var(--border-light)',
-              borderRadius: '4px',
+              color: isOver ? '#0353a4' : 'var(--text-muted)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.35rem',
             }}
           >
-            Este grupo está vacío. Agrega elementos arriba o mueve secciones existentes aquí.
+            <FolderInput size={13} />
+            <span>
+              {isOver
+                ? 'Suelta aquí para añadir al grupo'
+                : 'Arrastra una sección aquí, usa el selector arriba o agrega un elemento.'}
+            </span>
           </div>
         ) : (
           children.map((child, idx) => {
-            const isChildExpanded = expandedChildId === child.id;
+            const editable = isChildEditable(child);
+            const isChildExpanded = editable && expandedChildId === child.id;
             return (
               <div
                 key={child.id}
@@ -290,7 +377,7 @@ export function SectionGroupEditor({ section, onUpdate, onExtractChild }: Sectio
                 >
                   <button
                     type="button"
-                    onClick={() => setExpandedChildId(isChildExpanded ? null : child.id)}
+                    onClick={() => editable && setExpandedChildId(isChildExpanded ? null : child.id)}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -300,7 +387,7 @@ export function SectionGroupEditor({ section, onUpdate, onExtractChild }: Sectio
                       background: 'none',
                       border: 'none',
                       padding: 0,
-                      cursor: 'pointer',
+                      cursor: editable ? 'pointer' : 'default',
                       color: 'var(--text)',
                       fontFamily: 'var(--font-mono)',
                       fontSize: '0.72rem',
@@ -341,22 +428,26 @@ export function SectionGroupEditor({ section, onUpdate, onExtractChild }: Sectio
                   >
                     <FolderOutput size={12} />
                   </button>
-                  <button
-                    type="button"
-                    style={iconBtnStyle}
-                    title={isChildExpanded ? 'Colapsar' : 'Editar'}
-                    onClick={() => setExpandedChildId(isChildExpanded ? null : child.id)}
-                  >
-                    {isChildExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                  </button>
-                  <button
-                    type="button"
-                    style={{ ...iconBtnStyle, color: 'var(--danger)' }}
-                    title="Eliminar elemento"
-                    onClick={() => removeChild(child.id)}
-                  >
-                    <Trash2 size={12} />
-                  </button>
+                  {editable && (
+                    <button
+                      type="button"
+                      style={iconBtnStyle}
+                      title={isChildExpanded ? 'Colapsar' : 'Editar'}
+                      onClick={() => setExpandedChildId(isChildExpanded ? null : child.id)}
+                    >
+                      {isChildExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                    </button>
+                  )}
+                  {!child.isCore && (
+                    <button
+                      type="button"
+                      style={{ ...iconBtnStyle, color: 'var(--danger)' }}
+                      title="Eliminar elemento"
+                      onClick={() => removeChild(child.id)}
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  )}
                 </div>
 
                 {isChildExpanded && (
@@ -392,6 +483,19 @@ export function SectionGroupEditor({ section, onUpdate, onExtractChild }: Sectio
               </div>
             );
           })
+        )}
+        {children.length > 0 && isOver && (
+          <div
+            style={{
+              padding: '0.35rem',
+              textAlign: 'center',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.65rem',
+              color: '#0353a4',
+            }}
+          >
+            + Suelta aquí para añadir al grupo
+          </div>
         )}
       </div>
     </div>
